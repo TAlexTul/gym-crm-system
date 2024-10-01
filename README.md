@@ -1,0 +1,1 @@
+### Project type: web application
