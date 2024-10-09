@@ -90,17 +90,7 @@ public class TrainerDAOImpl implements TrainerDAO {
     }
 
     @Override
-    public Trainer mergeById(long id, Trainer trainer) {
-        return trainerStorage.getTrainerStorage().put(id, trainer);
-    }
-
-    @Override
-    public Trainer changeStatusById(long id, Trainer trainer) {
-        return trainerStorage.getTrainerStorage().put(id, trainer);
-    }
-
-    @Override
-    public Trainer changePasswordById(long id, Trainer trainer) {
+    public Trainer changeById(long id, Trainer trainer) {
         return trainerStorage.getTrainerStorage().put(id, trainer);
     }
 

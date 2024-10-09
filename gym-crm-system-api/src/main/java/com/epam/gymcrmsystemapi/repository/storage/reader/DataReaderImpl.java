@@ -32,8 +32,8 @@ public class DataReaderImpl<T> implements DataReader<T> {
                 queue.add(mapper.map(data));
             }
         } catch (IOException e) {
-            log.error("Unchecked IOException", e);
-            throw IOExceptions.uncheckedIOException(e);
+            log.error("IOException", e);
+            throw IOExceptions.IOException(e);
         }
         return queue;
     }

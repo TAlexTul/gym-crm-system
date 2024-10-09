@@ -67,7 +67,7 @@ public class TraineeService implements TraineeOperations {
                 .orElseThrow(() -> TraineeExceptions.traineeNotFound(id));
         if (trainee.getUser().getStatus() != status) {
             trainee.getUser().setStatus(status);
-            return TraineeResponse.fromTrainee(traineeDAO.changeStatusById(id, trainee));
+            return TraineeResponse.fromTrainee(traineeDAO.changeById(id, trainee));
         } else {
             return TraineeResponse.fromTrainee(trainee);
         }
@@ -78,7 +78,7 @@ public class TraineeService implements TraineeOperations {
         Trainee trainee = traineeDAO.findById(id)
                 .orElseThrow(() -> TraineeExceptions.traineeNotFound(id));
         trainee.getUser().setPassword(passwordEncoder.encode(request.password()));
-        return TraineeResponse.fromTrainee(traineeDAO.changePasswordById(id, trainee));
+        return TraineeResponse.fromTrainee(traineeDAO.changeById(id, trainee));
     }
 
     @Override
@@ -159,7 +159,7 @@ public class TraineeService implements TraineeOperations {
         if (address != null && !address.equals(trainee.getAddress())) {
             trainee.setAddress(address);
         }
-        traineeDAO.mergeById(trainee.getId(), trainee);
+        traineeDAO.changeById(trainee.getId(), trainee);
         return trainee;
     }
 }

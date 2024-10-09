@@ -20,6 +20,18 @@ public class Training {
     public Training() {
     }
 
+    public Training(Long id, Trainee trainee, Trainer trainer,
+                    String trainingName, TrainingType trainingType,
+                    OffsetDateTime trainingDate, Duration trainingDuration) {
+        this.id = id;
+        this.trainee = trainee;
+        this.trainer = trainer;
+        this.trainingName = trainingName;
+        this.trainingType = trainingType;
+        this.trainingDate = trainingDate;
+        this.trainingDuration = trainingDuration;
+    }
+
     public Long getId() {
         return id;
     }

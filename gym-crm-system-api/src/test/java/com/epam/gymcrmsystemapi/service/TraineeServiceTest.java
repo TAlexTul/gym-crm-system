@@ -160,7 +160,7 @@ public class TraineeServiceTest {
 
     @Test
     public void testMergeById() {
-        when(traineeDAO.mergeById(any(Long.class), any(Trainee.class))).thenReturn(trainee);
+        when(traineeDAO.changeById(any(Long.class), any(Trainee.class))).thenReturn(trainee);
         when(traineeDAO.findById(1L)).thenReturn(Optional.ofNullable(trainee));
 
         TraineeResponse response = traineeService.mergeById(1L, request);
@@ -175,7 +175,7 @@ public class TraineeServiceTest {
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
         assertEquals(trainee.getAddress(), response.address());
         verify(traineeDAO, times(1)).findById(1L);
-        verify(traineeDAO, times(1)).mergeById(1L, trainee);
+        verify(traineeDAO, times(1)).changeById(1L, trainee);
     }
 
     @Test
@@ -188,7 +188,7 @@ public class TraineeServiceTest {
         assertEquals("404 NOT_FOUND \"Trainee with id '1' not found\"", exception.getMessage());
 
         verify(traineeDAO, times(1)).findById(anyLong());
-        verify(traineeDAO, times(0)).mergeById(1L, trainee);
+        verify(traineeDAO, times(0)).changeById(1L, trainee);
     }
 
     @Test
@@ -196,14 +196,14 @@ public class TraineeServiceTest {
         var status = UserStatus.ACTIVE;
 
         when(traineeDAO.findById(1L)).thenReturn(Optional.ofNullable(trainee));
-        when(traineeDAO.changeStatusById(1L, trainee)).thenReturn(trainee);
+        when(traineeDAO.changeById(1L, trainee)).thenReturn(trainee);
 
         TraineeResponse response = traineeService.changeStatusById(1L, status);
 
         assertNotNull(response);
         assertEquals(trainee.getUser().getStatus(), response.status());
         verify(traineeDAO, times(1)).findById(1L);
-        verify(traineeDAO, times(0)).changeStatusById(1L, trainee);
+        verify(traineeDAO, times(0)).changeById(1L, trainee);
     }
 
     @Test
@@ -211,14 +211,14 @@ public class TraineeServiceTest {
         var status = UserStatus.SUSPEND;
 
         when(traineeDAO.findById(1L)).thenReturn(Optional.ofNullable(trainee));
-        when(traineeDAO.changeStatusById(1L, trainee)).thenReturn(trainee);
+        when(traineeDAO.changeById(1L, trainee)).thenReturn(trainee);
 
         TraineeResponse response = traineeService.changeStatusById(1L, status);
 
         assertNotNull(response);
         assertEquals(trainee.getUser().getStatus(), response.status());
         verify(traineeDAO, times(1)).findById(1L);
-        verify(traineeDAO, times(1)).changeStatusById(1L, trainee);
+        verify(traineeDAO, times(1)).changeById(1L, trainee);
     }
 
     @Test
@@ -229,7 +229,7 @@ public class TraineeServiceTest {
 
         when(traineeDAO.findById(1L)).thenReturn(Optional.ofNullable(trainee));
         when(passwordEncoder.encode(request.password())).thenReturn(encodePassword);
-        when(traineeDAO.changePasswordById(1L, trainee)).thenReturn(trainee);
+        when(traineeDAO.changeById(1L, trainee)).thenReturn(trainee);
 
         TraineeResponse response = traineeService.changePasswordById(1L, request);
 
@@ -244,7 +244,7 @@ public class TraineeServiceTest {
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
         assertEquals(trainee.getAddress(), response.address());
         verify(traineeDAO, times(1)).findById(1L);
-        verify(traineeDAO, times(1)).changePasswordById(1L, trainee);
+        verify(traineeDAO, times(1)).changeById(1L, trainee);
     }
 
     @Test
@@ -259,7 +259,7 @@ public class TraineeServiceTest {
         assertEquals("404 NOT_FOUND \"Trainee with id '1' not found\"", exception.getMessage());
 
         verify(traineeDAO, times(1)).findById(anyLong());
-        verify(traineeDAO, times(0)).changePasswordById(anyLong(), any(Trainee.class));
+        verify(traineeDAO, times(0)).changeById(anyLong(), any(Trainee.class));
     }
 
     @Test

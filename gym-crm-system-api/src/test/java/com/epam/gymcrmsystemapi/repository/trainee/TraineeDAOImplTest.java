@@ -161,22 +161,8 @@ public class TraineeDAOImplTest {
     }
 
     @Test
-    public void testMergeById() {
-        traineeDAO.mergeById(1L, trainee1);
-
-        verify(traineeMap, only()).put(1L, trainee1);
-    }
-
-    @Test
-    public void testChangeStatusById() {
-        traineeDAO.changeStatusById(1L, trainee1);
-
-        verify(traineeMap, only()).put(1L, trainee1);
-    }
-
-    @Test
-    public void testChangePasswordById() {
-        traineeDAO.changePasswordById(1L, trainee1);
+    public void testChange() {
+        traineeDAO.changeById(1L, trainee1);
 
         verify(traineeMap, only()).put(1L, trainee1);
     }

@@ -155,7 +155,7 @@ public class TrainerServiceTest {
 
     @Test
     public void testMergeById() {
-        when(trainerDAO.mergeById(1L, trainer)).thenReturn(trainer);
+        when(trainerDAO.changeById(1L, trainer)).thenReturn(trainer);
         when(trainerDAO.findById(1L)).thenReturn(Optional.ofNullable(trainer));
 
         TrainerResponse response = trainerService.mergeById(1L, request);
@@ -169,7 +169,7 @@ public class TrainerServiceTest {
         assertEquals(trainer.getId(), response.trainerId());
         assertEquals(trainer.getSpecialization(), response.specialization());
         verify(trainerDAO, times(1)).findById(1L);
-        verify(trainerDAO, times(1)).mergeById(1L, trainer);
+        verify(trainerDAO, times(1)).changeById(1L, trainer);
     }
 
     @Test
@@ -182,7 +182,7 @@ public class TrainerServiceTest {
         assertEquals("404 NOT_FOUND \"Trainer with id '1' not found\"", exception.getMessage());
 
         verify(trainerDAO, times(1)).findById(anyLong());
-        verify(trainerDAO, times(0)).mergeById(1L, trainer);
+        verify(trainerDAO, times(0)).changeById(1L, trainer);
     }
 
     @Test
@@ -190,14 +190,14 @@ public class TrainerServiceTest {
         var status = UserStatus.ACTIVE;
 
         when(trainerDAO.findById(1L)).thenReturn(Optional.ofNullable(trainer));
-        when(trainerDAO.changeStatusById(1L, trainer)).thenReturn(trainer);
+        when(trainerDAO.changeById(1L, trainer)).thenReturn(trainer);
 
         TrainerResponse response = trainerService.changeStatusById(1L, status);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
         verify(trainerDAO, times(1)).findById(1L);
-        verify(trainerDAO, times(0)).changeStatusById(1L, trainer);
+        verify(trainerDAO, times(0)).changeById(1L, trainer);
     }
 
     @Test
@@ -205,14 +205,14 @@ public class TrainerServiceTest {
         var status = UserStatus.SUSPEND;
 
         when(trainerDAO.findById(1L)).thenReturn(Optional.ofNullable(trainer));
-        when(trainerDAO.changeStatusById(1L, trainer)).thenReturn(trainer);
+        when(trainerDAO.changeById(1L, trainer)).thenReturn(trainer);
 
         TrainerResponse response = trainerService.changeStatusById(1L, status);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
         verify(trainerDAO, times(1)).findById(1L);
-        verify(trainerDAO, times(1)).changeStatusById(1L, trainer);
+        verify(trainerDAO, times(1)).changeById(1L, trainer);
     }
 
     @Test
@@ -223,7 +223,7 @@ public class TrainerServiceTest {
 
         when(trainerDAO.findById(1L)).thenReturn(Optional.ofNullable(trainer));
         when(passwordEncoder.encode(request.password())).thenReturn(encodePassword);
-        when(trainerDAO.changePasswordById(1L, trainer)).thenReturn(trainer);
+        when(trainerDAO.changeById(1L, trainer)).thenReturn(trainer);
 
         TrainerResponse response = trainerService.changePasswordById(1L, request);
 
@@ -237,7 +237,7 @@ public class TrainerServiceTest {
         assertEquals(trainer.getId(), response.trainerId());
         assertEquals(trainer.getSpecialization(), response.specialization());
         verify(trainerDAO, times(1)).findById(1L);
-        verify(trainerDAO, times(1)).changePasswordById(1L, trainer);
+        verify(trainerDAO, times(1)).changeById(1L, trainer);
     }
 
     @Test
@@ -252,7 +252,7 @@ public class TrainerServiceTest {
         assertEquals("404 NOT_FOUND \"Trainer with id '1' not found\"", exception.getMessage());
 
         verify(trainerDAO, times(1)).findById(anyLong());
-        verify(trainerDAO, times(0)).changePasswordById(anyLong(), any(Trainer.class));
+        verify(trainerDAO, times(0)).changeById(anyLong(), any(Trainer.class));
     }
 
     @Test

@@ -16,6 +16,14 @@ public class Trainee {
     public Trainee() {
     }
 
+    public Trainee(Long id, OffsetDateTime dateOfBirth,
+                   String address, User user) {
+        this.id = id;
+        this.dateOfBirth = dateOfBirth;
+        this.address = address;
+        this.user = user;
+    }
+
     public Long getId() {
         return id;
     }

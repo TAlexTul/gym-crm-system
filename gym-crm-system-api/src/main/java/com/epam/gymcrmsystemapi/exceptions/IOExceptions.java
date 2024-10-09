@@ -10,7 +10,7 @@ public final class IOExceptions {
     private IOExceptions() {
     }
 
-    public static ResponseStatusException uncheckedIOException(IOException ex) {
+    public static ResponseStatusException IOException(IOException ex) {
         return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 }

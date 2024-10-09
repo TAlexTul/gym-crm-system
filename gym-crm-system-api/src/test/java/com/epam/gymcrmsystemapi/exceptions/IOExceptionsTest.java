@@ -14,7 +14,7 @@ class IOExceptionsTest {
     void testUncheckedIOException() {
         var ex = new IOException("File not found");
 
-        ResponseStatusException rse = IOExceptions.uncheckedIOException(ex);
+        ResponseStatusException rse = IOExceptions.IOException(ex);
 
         String message = rse.getMessage();
         String[] parts = message.split(" ", 3);
@@ -29,7 +29,7 @@ class IOExceptionsTest {
     void testUncheckedIOExceptionWithDifferentMessage() {
         var ex = new IOException("Read error");
 
-        ResponseStatusException rse = IOExceptions.uncheckedIOException(ex);
+        ResponseStatusException rse = IOExceptions.IOException(ex);
 
         String message = rse.getMessage();
         String[] parts = message.split(" ", 3);

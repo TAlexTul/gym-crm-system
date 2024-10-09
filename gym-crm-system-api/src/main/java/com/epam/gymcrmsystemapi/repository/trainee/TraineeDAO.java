@@ -18,11 +18,7 @@ public interface TraineeDAO {
 
     boolean existByFirstNameAndLastName(String firstName, String lastName);
 
-    Trainee mergeById(long id, Trainee trainee);
-
-    Trainee changeStatusById(long id, Trainee trainee);
-
-    Trainee changePasswordById(long id, Trainee trainee);
+    Trainee changeById(long id, Trainee trainee);
 
     void deleteById(long id);
 

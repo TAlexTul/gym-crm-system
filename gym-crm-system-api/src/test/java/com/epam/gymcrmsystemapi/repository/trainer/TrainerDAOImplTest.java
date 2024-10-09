@@ -159,26 +159,11 @@ public class TrainerDAOImplTest {
     }
 
     @Test
-    public void testMergeById() {
-        trainerDAO.mergeById(1L, trainer1);
+    public void testChange() {
+        trainerDAO.changeById(1L, trainer1);
 
         verify(trainerMap, only()).put(1L, trainer1);
     }
-
-    @Test
-    public void testChangeStatusById() {
-        trainerDAO.changeStatusById(1L, trainer1);
-
-        verify(trainerMap, only()).put(1L, trainer1);
-    }
-
-    @Test
-    public void testChangePasswordById() {
-        trainerDAO.changePasswordById(1L, trainer1);
-
-        verify(trainerMap, only()).put(1L, trainer1);
-    }
-
 
     @Test
     public void deleteById() {

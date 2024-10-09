@@ -90,17 +90,7 @@ public class TraineeDAOImpl implements TraineeDAO {
     }
 
     @Override
-    public Trainee mergeById(long id, Trainee trainee) {
-        return traineeStorage.getTraineeStorage().put(id, trainee);
-    }
-
-    @Override
-    public Trainee changeStatusById(long id, Trainee trainee) {
-        return traineeStorage.getTraineeStorage().put(id, trainee);
-    }
-
-    @Override
-    public Trainee changePasswordById(long id, Trainee trainee) {
+    public Trainee changeById(long id, Trainee trainee) {
         return traineeStorage.getTraineeStorage().put(id, trainee);
     }
 

@@ -67,7 +67,7 @@ public class TrainerService implements TrainerOperations {
                 .orElseThrow(() -> TraineeExceptions.traineeNotFound(id));
         if (trainer.getUser().getStatus() != status) {
             trainer.getUser().setStatus(status);
-            return TrainerResponse.fromTrainer(trainerDAO.changeStatusById(id, trainer));
+            return TrainerResponse.fromTrainer(trainerDAO.changeById(id, trainer));
         } else {
             return TrainerResponse.fromTrainer(trainer);
         }
@@ -78,7 +78,7 @@ public class TrainerService implements TrainerOperations {
         Trainer trainer = trainerDAO.findById(id)
                 .orElseThrow(() -> TrainerExceptions.trainerNotFound(id));
         trainer.getUser().setPassword(passwordEncoder.encode(request.password()));
-        return TrainerResponse.fromTrainer(trainerDAO.changePasswordById(id, trainer));
+        return TrainerResponse.fromTrainer(trainerDAO.changeById(id, trainer));
     }
 
     @Override
@@ -154,7 +154,7 @@ public class TrainerService implements TrainerOperations {
         if (specialization != null && !specialization.equals(trainer.getSpecialization())) {
             trainer.setSpecialization(specialization);
         }
-        trainerDAO.mergeById(trainer.getId(), trainer);
+        trainerDAO.changeById(trainer.getId(), trainer);
         return trainer;
     }
 }
