@@ -1,0 +1,11 @@
+storage:
+  file:
+    path:
+      trainee: trainee.csv
+      trainer: trainer.csv
+      training: training.csv
+
+password:
+  strength: 10
+  length: 10
+  characters: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()
