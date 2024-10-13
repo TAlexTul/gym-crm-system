@@ -6,7 +6,8 @@ import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
 import com.epam.gymcrmsystemapi.model.user.OverridePasswordRequest;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
-import com.epam.gymcrmsystemapi.repository.trainee.TraineeDAO;
+import com.epam.gymcrmsystemapi.repository.TraineeRepository;
+import com.epam.gymcrmsystemapi.repository.TrainingRepository;
 import com.epam.gymcrmsystemapi.service.trainee.TraineeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,13 +31,16 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class TraineeServiceTest {
+class TraineeServiceTest {
 
     @InjectMocks
     private TraineeService traineeService;
 
     @Mock
-    private TraineeDAO traineeDAO;
+    private TraineeRepository traineeRepository;
+
+    @Mock
+    private TrainingRepository trainingRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -48,7 +52,6 @@ public class TraineeServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        traineeService.setPasswordEncoder(passwordEncoder);
         ReflectionTestUtils.setField(traineeService, "passwordLength", 10);
         ReflectionTestUtils.setField(traineeService, "passwordCharacters", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()");
         trainee = getTrainee();
@@ -61,8 +64,12 @@ public class TraineeServiceTest {
     }
 
     @Test
-    public void testCreateSuccess() {
-        when(traineeDAO.save(any(Trainee.class))).thenReturn(trainee);
+    void testCreateSuccess() {
+        String firstName = request.firstName();
+        String lastName = request.lastName();
+
+        when(traineeRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(false);
+        when(traineeRepository.save(any(Trainee.class))).thenReturn(trainee);
 
         TraineeResponse response = traineeService.create(request);
 
@@ -70,19 +77,23 @@ public class TraineeServiceTest {
         assertEquals(trainee.getUser().getId(), response.userId());
         assertEquals(trainee.getUser().getFirstName(), response.firstName());
         assertEquals(trainee.getUser().getLastName(), response.lastName());
-        assertEquals(trainee.getUser().getUserName(), response.userName());
+        assertEquals(trainee.getUser().getUsername(), response.userName());
         assertEquals(trainee.getUser().getStatus(), response.status());
         assertEquals(trainee.getId(), response.traineeId());
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
         assertEquals(trainee.getAddress(), response.address());
-        verify(traineeDAO, times(1)).existByFirstNameAndLastName(any(String.class), any(String.class));
-        verify(traineeDAO, times(1)).save(any(Trainee.class));
+        verify(traineeRepository, times(1)).existsByFirstNameAndLastName(firstName, lastName);
+        verify(traineeRepository, times(1)).save(any(Trainee.class));
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testPrivateGetUser() throws Exception {
-        when(traineeDAO.existByFirstNameAndLastName(request.firstName(), request.lastName())).thenReturn(true);
-        when(traineeDAO.findByFirstNameAndLastName(request.firstName(), request.lastName())).thenReturn(Optional.ofNullable(trainee));
+    void testPrivateCalculateUsername() throws Exception {
+        String firstName = request.firstName();
+        String lastName = request.lastName();
+
+        when(traineeRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(true);
+        when(traineeRepository.findByFirstNameAndLastName(firstName, lastName)).thenReturn(Optional.ofNullable(trainee));
 
         Method method = TraineeService.class.getDeclaredMethod("calculateUserName", TraineeSaveMergeRequest.class);
         method.setAccessible(true);
@@ -91,10 +102,13 @@ public class TraineeServiceTest {
 
         assertNotNull(userName);
         assertEquals("John.Doe.1", userName);
+        verify(traineeRepository, times(1)).existsByFirstNameAndLastName(firstName, lastName);
+        verify(traineeRepository, times(1)).findByFirstNameAndLastName(firstName, lastName);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testPrivateGenerateRandomPassword() throws Exception {
+    void testPrivateGenerateRandomPassword() throws Exception {
         int passwordLength = 10;
         String passwordCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
 
@@ -111,9 +125,9 @@ public class TraineeServiceTest {
     }
 
     @Test
-    public void testList() {
+    void testList() {
         Page<Trainee> trainingPage = new PageImpl<>(Collections.singletonList(trainee));
-        when(traineeDAO.findAll(any(Pageable.class))).thenReturn(trainingPage);
+        when(traineeRepository.findAll(any(Pageable.class))).thenReturn(trainingPage);
 
         Page<TraineeResponse> responsePage = traineeService.list(Pageable.unpaged());
 
@@ -122,162 +136,340 @@ public class TraineeServiceTest {
         assertEquals(trainee.getUser().getId(), responsePage.getContent().get(0).userId());
         assertEquals(trainee.getUser().getFirstName(), responsePage.getContent().get(0).firstName());
         assertEquals(trainee.getUser().getLastName(), responsePage.getContent().get(0).lastName());
-        assertEquals(trainee.getUser().getUserName(), responsePage.getContent().get(0).userName());
+        assertEquals(trainee.getUser().getUsername(), responsePage.getContent().get(0).userName());
         assertEquals(trainee.getUser().getStatus(), responsePage.getContent().get(0).status());
         assertEquals(trainee.getId(), responsePage.getContent().get(0).traineeId());
         assertEquals(trainee.getDateOfBirth(), responsePage.getContent().get(0).dateOfBirth());
         assertEquals(trainee.getAddress(), responsePage.getContent().get(0).address());
-        verify(traineeDAO, only()).findAll(any(Pageable.class));
+        verify(traineeRepository, only()).findAll(any(Pageable.class));
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
     void testFindById() {
-        when(traineeDAO.findById(1L)).thenReturn(Optional.of(trainee));
+        Long id = 1L;
 
-        Optional<TraineeResponse> response = traineeService.findById(1L);
+        when(traineeRepository.findById(id)).thenReturn(Optional.of(trainee));
+
+        Optional<TraineeResponse> response = traineeService.findById(id);
 
         assertTrue(response.isPresent());
         assertEquals(trainee.getUser().getId(), response.get().userId());
         assertEquals(trainee.getUser().getFirstName(), response.get().firstName());
         assertEquals(trainee.getUser().getLastName(), response.get().lastName());
-        assertEquals(trainee.getUser().getUserName(), response.get().userName());
+        assertEquals(trainee.getUser().getUsername(), response.get().userName());
         assertEquals(trainee.getUser().getStatus(), response.get().status());
         assertEquals(trainee.getId(), response.get().traineeId());
         assertEquals(trainee.getDateOfBirth(), response.get().dateOfBirth());
         assertEquals(trainee.getAddress(), response.get().address());
-        verify(traineeDAO, only()).findById(1L);
+        verify(traineeRepository, only()).findById(id);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
     void testFindByIdNotFound() {
-        when(traineeDAO.findById(1L)).thenReturn(Optional.empty());
+        Long id = 1L;
 
-        Optional<TraineeResponse> response = traineeService.findById(1L);
+        when(traineeRepository.findById(id)).thenReturn(Optional.empty());
+
+        Optional<TraineeResponse> response = traineeService.findById(id);
 
         assertFalse(response.isPresent());
-        verify(traineeDAO, only()).findById(1L);
+        verify(traineeRepository, only()).findById(id);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testMergeById() {
-        when(traineeDAO.changeById(any(Long.class), any(Trainee.class))).thenReturn(trainee);
-        when(traineeDAO.findById(1L)).thenReturn(Optional.ofNullable(trainee));
+    void testFindByUsername() {
+        String username = "John.Doe";
 
-        TraineeResponse response = traineeService.mergeById(1L, request);
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(trainee));
+
+        Optional<TraineeResponse> response = traineeService.findByUsername(username);
+
+        assertTrue(response.isPresent());
+        assertEquals(trainee.getUser().getId(), response.get().userId());
+        assertEquals(trainee.getUser().getFirstName(), response.get().firstName());
+        assertEquals(trainee.getUser().getLastName(), response.get().lastName());
+        assertEquals(trainee.getUser().getUsername(), response.get().userName());
+        assertEquals(trainee.getUser().getStatus(), response.get().status());
+        assertEquals(trainee.getId(), response.get().traineeId());
+        assertEquals(trainee.getDateOfBirth(), response.get().dateOfBirth());
+        assertEquals(trainee.getAddress(), response.get().address());
+        verify(traineeRepository, only()).findByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testFindByUsernameNotFound() {
+        String username = "John.Doe";
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        Optional<TraineeResponse> response = traineeService.findByUsername(username);
+
+        assertFalse(response.isPresent());
+        verify(traineeRepository, only()).findByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testMergeById() {
+        Long id = 1L;
+
+        when(traineeRepository.findById(id)).thenReturn(Optional.ofNullable(trainee));
+
+        TraineeResponse response = traineeService.mergeById(id, request);
 
         assertNotNull(response);
         assertEquals(trainee.getUser().getId(), response.userId());
         assertEquals(trainee.getUser().getFirstName(), response.firstName());
         assertEquals(trainee.getUser().getLastName(), response.lastName());
-        assertEquals(trainee.getUser().getUserName(), response.userName());
+        assertEquals(trainee.getUser().getUsername(), response.userName());
         assertEquals(trainee.getUser().getStatus(), response.status());
         assertEquals(trainee.getId(), response.traineeId());
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
         assertEquals(trainee.getAddress(), response.address());
-        verify(traineeDAO, times(1)).findById(1L);
-        verify(traineeDAO, times(1)).changeById(1L, trainee);
+        verify(traineeRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testMergeByIdTraineeNotFound() {
-        when(traineeDAO.findById(1L)).thenReturn(Optional.empty());
+    void testMergeByIdTraineeNotFound() {
+        Long id = 1L;
+
+        when(traineeRepository.findById(id)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> traineeService.mergeById(1L, request));
+                assertThrows(ResponseStatusException.class, () -> traineeService.mergeById(id, request));
 
         assertEquals("404 NOT_FOUND \"Trainee with id '1' not found\"", exception.getMessage());
 
-        verify(traineeDAO, times(1)).findById(anyLong());
-        verify(traineeDAO, times(0)).changeById(1L, trainee);
+        verify(traineeRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testChangeStatusByIdEqualStatus() {
+    void testMergeByUsername() {
+        String username = "John.Doe";
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainee));
+
+        TraineeResponse response = traineeService.mergeByUsername(username, request);
+
+        assertNotNull(response);
+        assertEquals(trainee.getUser().getId(), response.userId());
+        assertEquals(trainee.getUser().getFirstName(), response.firstName());
+        assertEquals(trainee.getUser().getLastName(), response.lastName());
+        assertEquals(trainee.getUser().getUsername(), response.userName());
+        assertEquals(trainee.getUser().getStatus(), response.status());
+        assertEquals(trainee.getId(), response.traineeId());
+        assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
+        assertEquals(trainee.getAddress(), response.address());
+        verify(traineeRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testMergeByUsernameNotFound() {
+        String username = "John.Doe";
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> traineeService.mergeByUsername(username, request));
+
+        assertEquals("404 NOT_FOUND \"Trainee with user name 'John.Doe' not found\"", exception.getMessage());
+
+        verify(traineeRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testChangeStatusByIdEqualStatus() {
+        Long id = 1L;
         var status = UserStatus.ACTIVE;
 
-        when(traineeDAO.findById(1L)).thenReturn(Optional.ofNullable(trainee));
-        when(traineeDAO.changeById(1L, trainee)).thenReturn(trainee);
+        when(traineeRepository.findById(id)).thenReturn(Optional.ofNullable(trainee));
 
-        TraineeResponse response = traineeService.changeStatusById(1L, status);
+        TraineeResponse response = traineeService.changeStatusById(id, status);
 
         assertNotNull(response);
         assertEquals(trainee.getUser().getStatus(), response.status());
-        verify(traineeDAO, times(1)).findById(1L);
-        verify(traineeDAO, times(0)).changeById(1L, trainee);
+        verify(traineeRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testChangeStatusByIdNotEqualStatus() {
+    void testChangeStatusByIdNotEqualStatus() {
+        Long id = 1L;
         var status = UserStatus.SUSPEND;
 
-        when(traineeDAO.findById(1L)).thenReturn(Optional.ofNullable(trainee));
-        when(traineeDAO.changeById(1L, trainee)).thenReturn(trainee);
+        when(traineeRepository.findById(id)).thenReturn(Optional.ofNullable(trainee));
 
-        TraineeResponse response = traineeService.changeStatusById(1L, status);
+        TraineeResponse response = traineeService.changeStatusById(id, status);
 
         assertNotNull(response);
         assertEquals(trainee.getUser().getStatus(), response.status());
-        verify(traineeDAO, times(1)).findById(1L);
-        verify(traineeDAO, times(1)).changeById(1L, trainee);
+        verify(traineeRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testChangePasswordById() {
-        PasswordEncoder controlEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
+    void testChangeStatusByUsernameEqualStatus() {
+        String username = "John.Doe";
+        var status = UserStatus.ACTIVE;
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainee));
+
+        TraineeResponse response = traineeService.changeStatusByUsername(username, status);
+
+        assertNotNull(response);
+        assertEquals(trainee.getUser().getStatus(), response.status());
+        verify(traineeRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testChangeStatusByUsernameNotEqualStatus() {
+        String username = "John.Doe";
+        var status = UserStatus.SUSPEND;
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainee));
+
+        TraineeResponse response = traineeService.changeStatusByUsername(username, status);
+
+        assertNotNull(response);
+        assertEquals(trainee.getUser().getStatus(), response.status());
+        verify(traineeRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testChangePasswordById() {
+        Long id = 1L;
+        int passwordStrength = 10;
+        PasswordEncoder controlEncoder = new BCryptPasswordEncoder(passwordStrength, new SecureRandom());
         OverridePasswordRequest request = new OverridePasswordRequest("aB9dE4fGhJ");
         String encodePassword = "$2a$10$Y.2j9U6qwbgBtYFgZZi7nu0j96f.CRdSV9pNYw7N.ELH1nv/2905C";
 
-        when(traineeDAO.findById(1L)).thenReturn(Optional.ofNullable(trainee));
+        when(traineeRepository.findById(id)).thenReturn(Optional.ofNullable(trainee));
         when(passwordEncoder.encode(request.password())).thenReturn(encodePassword);
-        when(traineeDAO.changeById(1L, trainee)).thenReturn(trainee);
 
-        TraineeResponse response = traineeService.changePasswordById(1L, request);
+        TraineeResponse response = traineeService.changePasswordById(id, request);
 
         assertNotNull(response);
         assertTrue(controlEncoder.matches(request.password(), encodePassword));
         assertEquals(trainee.getUser().getId(), response.userId());
         assertEquals(trainee.getUser().getFirstName(), response.firstName());
         assertEquals(trainee.getUser().getLastName(), response.lastName());
-        assertEquals(trainee.getUser().getUserName(), response.userName());
+        assertEquals(trainee.getUser().getUsername(), response.userName());
         assertEquals(trainee.getUser().getStatus(), response.status());
         assertEquals(trainee.getId(), response.traineeId());
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
         assertEquals(trainee.getAddress(), response.address());
-        verify(traineeDAO, times(1)).findById(1L);
-        verify(traineeDAO, times(1)).changeById(1L, trainee);
+        verify(traineeRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testChangePasswordByIdTraineeNotFound() {
-        OverridePasswordRequest request = new OverridePasswordRequest("aB9dE4fGhJ");
+    void testChangePasswordByIdTraineeNotFound() {
+        Long id = 1L;
+        var request = new OverridePasswordRequest("aB9dE4fGhJ");
 
-        when(traineeDAO.findById(1L)).thenReturn(Optional.empty());
+        when(traineeRepository.findById(id)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> traineeService.changePasswordById(1L, request));
+                assertThrows(ResponseStatusException.class, () -> traineeService.changePasswordById(id, request));
 
         assertEquals("404 NOT_FOUND \"Trainee with id '1' not found\"", exception.getMessage());
 
-        verify(traineeDAO, times(1)).findById(anyLong());
-        verify(traineeDAO, times(0)).changeById(anyLong(), any(Trainee.class));
+        verify(traineeRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     @Test
-    public void testDelete() {
-        doNothing().when(traineeDAO).deleteById(1L);
+    void testChangePasswordByUsername() {
+        String username = "John.Doe";
+        int passwordStrength = 10;
+        PasswordEncoder controlEncoder = new BCryptPasswordEncoder(passwordStrength, new SecureRandom());
+        OverridePasswordRequest request = new OverridePasswordRequest("aB9dE4fGhJ");
+        String encodePassword = "$2a$10$Y.2j9U6qwbgBtYFgZZi7nu0j96f.CRdSV9pNYw7N.ELH1nv/2905C";
 
-        traineeService.deleteById(1L);
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainee));
+        when(passwordEncoder.encode(request.password())).thenReturn(encodePassword);
 
-        verify(traineeDAO, only()).deleteById(1L);
+        TraineeResponse response = traineeService.changePasswordByUsername(username, request);
+
+        assertNotNull(response);
+        assertTrue(controlEncoder.matches(request.password(), encodePassword));
+        assertEquals(trainee.getUser().getId(), response.userId());
+        assertEquals(trainee.getUser().getFirstName(), response.firstName());
+        assertEquals(trainee.getUser().getLastName(), response.lastName());
+        assertEquals(trainee.getUser().getUsername(), response.userName());
+        assertEquals(trainee.getUser().getStatus(), response.status());
+        assertEquals(trainee.getId(), response.traineeId());
+        assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
+        assertEquals(trainee.getAddress(), response.address());
+        verify(traineeRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testChangePasswordByUsernameNotFound() {
+        String username = "John.Doe";
+        var request = new OverridePasswordRequest("aB9dE4fGhJ");
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> traineeService.changePasswordByUsername(username, request));
+
+        assertEquals("404 NOT_FOUND \"Trainee with user name 'John.Doe' not found\"", exception.getMessage());
+
+        verify(traineeRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testDeleteById() {
+        Long id = 1L;
+
+        when(traineeRepository.findById(id)).thenReturn(Optional.ofNullable(trainee));
+        doNothing().when(trainingRepository).deleteAllByTrainee(trainee);
+        doNothing().when(traineeRepository).deleteById(id);
+
+        traineeService.deleteById(id);
+
+        verify(trainingRepository, times(1)).deleteAllByTrainee(trainee);
+        verify(traineeRepository, times(1)).findById(id);
+        verify(traineeRepository, times(1)).deleteById(id);
+        verifyNoMoreInteractions(traineeRepository);
+    }
+
+    @Test
+    void testDeleteByUsername() {
+        String username = "John.Doe";
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainee));
+        doNothing().when(trainingRepository).deleteAllByTrainee(trainee);
+        doNothing().when(traineeRepository).deleteByUsername(username);
+
+        traineeService.deleteByUsername(username);
+
+        verify(trainingRepository, times(1)).deleteAllByTrainee(trainee);
+        verify(traineeRepository, times(1)).findByUsername(username);
+        verify(traineeRepository, times(1)).deleteByUsername(username);
+        verifyNoMoreInteractions(traineeRepository);
     }
 
     private Trainee getTrainee() {
-        var trainee1 = new Trainee();
-        trainee1.setId(1L);
-        trainee1.setDateOfBirth(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"));
-        trainee1.setAddress("123 Main St");
-        trainee1.setUser(getUser());
-        return trainee1;
+        var trainee = new Trainee();
+        trainee.setId(1L);
+        trainee.setDateOfBirth(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"));
+        trainee.setAddress("123 Main St");
+        trainee.setUser(getUser());
+        return trainee;
     }
 
     private User getUser() {
@@ -285,7 +477,7 @@ public class TraineeServiceTest {
         user.setId(1L);
         user.setFirstName("John");
         user.setLastName("Doe");
-        user.setUserName("John.Doe");
+        user.setUsername("John.Doe");
         user.setPassword("aB9dE4fGhJ");
         user.setStatus(UserStatus.ACTIVE);
         return user;

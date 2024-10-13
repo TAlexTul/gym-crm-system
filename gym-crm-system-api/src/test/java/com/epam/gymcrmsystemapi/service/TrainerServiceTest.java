@@ -1,12 +1,13 @@
 package com.epam.gymcrmsystemapi.service;
 
+import com.epam.gymcrmsystemapi.model.trainer.Specialization;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveMergeRequest;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.user.OverridePasswordRequest;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
-import com.epam.gymcrmsystemapi.repository.trainer.TrainerDAO;
+import com.epam.gymcrmsystemapi.repository.TrainerRepository;
 import com.epam.gymcrmsystemapi.service.trainer.TrainerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,38 +30,41 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class TrainerServiceTest {
+class TrainerServiceTest {
 
     @InjectMocks
     private TrainerService trainerService;
 
     @Mock
-    private TrainerDAO trainerDAO;
+    private TrainerRepository trainerRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    private TrainerSaveMergeRequest request;
-
     private Trainer trainer;
 
+    private TrainerSaveMergeRequest request;
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
-        trainerService.setPasswordEncoder(passwordEncoder);
         ReflectionTestUtils.setField(trainerService, "passwordLength", 10);
         ReflectionTestUtils.setField(trainerService, "passwordCharacters", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()");
         trainer = getTrainer();
         request = new TrainerSaveMergeRequest(
                 "John",
                 "Doe",
-                "Box"
+                Specialization.PERSONAL_TRAINER
         );
     }
 
     @Test
-    public void testCreateSuccess() {
-        when(trainerDAO.save(any(Trainer.class))).thenReturn(trainer);
+    void testCreateSuccess() {
+        String firstName = request.firstName();
+        String lastName = request.lastName();
+
+        when(trainerRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(false);
+        when(trainerRepository.save(any(Trainer.class))).thenReturn(trainer);
 
         TrainerResponse response = trainerService.create(request);
 
@@ -68,18 +72,22 @@ public class TrainerServiceTest {
         assertEquals(trainer.getUser().getId(), response.userId());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getUserName(), response.userName());
+        assertEquals(trainer.getUser().getUsername(), response.userName());
         assertEquals(trainer.getUser().getStatus(), response.status());
         assertEquals(trainer.getId(), response.trainerId());
         assertEquals(trainer.getSpecialization(), response.specialization());
-        verify(trainerDAO, times(1)).existByFirstNameAndLastName(any(String.class), any(String.class));
-        verify(trainerDAO, times(1)).save(any(Trainer.class));
+        verify(trainerRepository, times(1)).existsByFirstNameAndLastName(firstName, lastName);
+        verify(trainerRepository, times(1)).save(any(Trainer.class));
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testPrivateGetUser() throws Exception {
-        when(trainerDAO.existByFirstNameAndLastName(request.firstName(), request.lastName())).thenReturn(true);
-        when(trainerDAO.findByFirstNameAndLastName(request.firstName(), request.lastName())).thenReturn(Optional.ofNullable(trainer));
+    void testPrivateCalculateUsername() throws Exception {
+        String firstName = request.firstName();
+        String lastName = request.lastName();
+
+        when(trainerRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(true);
+        when(trainerRepository.findByFirstNameAndLastName(firstName, lastName)).thenReturn(Optional.ofNullable(trainer));
 
         Method method = TrainerService.class.getDeclaredMethod("calculateUserName", TrainerSaveMergeRequest.class);
         method.setAccessible(true);
@@ -88,10 +96,13 @@ public class TrainerServiceTest {
 
         assertNotNull(userName);
         assertEquals("John.Doe.1", userName);
+        verify(trainerRepository, times(1)).existsByFirstNameAndLastName(firstName, lastName);
+        verify(trainerRepository, times(1)).findByFirstNameAndLastName(firstName, lastName);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testPrivateGenerateRandomPassword() throws Exception {
+    void testPrivateGenerateRandomPassword() throws Exception {
         int passwordLength = 10;
         String passwordCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
 
@@ -108,9 +119,9 @@ public class TrainerServiceTest {
     }
 
     @Test
-    public void testList() {
+    void testList() {
         Page<Trainer> trainingPage = new PageImpl<>(Collections.singletonList(trainer));
-        when(trainerDAO.findAll(any(Pageable.class))).thenReturn(trainingPage);
+        when(trainerRepository.findAll(any(Pageable.class))).thenReturn(trainingPage);
 
         Page<TrainerResponse> responsePage = trainerService.list(Pageable.unpaged());
 
@@ -119,155 +130,323 @@ public class TrainerServiceTest {
         assertEquals(trainer.getUser().getId(), responsePage.getContent().get(0).userId());
         assertEquals(trainer.getUser().getFirstName(), responsePage.getContent().get(0).firstName());
         assertEquals(trainer.getUser().getLastName(), responsePage.getContent().get(0).lastName());
-        assertEquals(trainer.getUser().getUserName(), responsePage.getContent().get(0).userName());
+        assertEquals(trainer.getUser().getUsername(), responsePage.getContent().get(0).userName());
         assertEquals(trainer.getUser().getStatus(), responsePage.getContent().get(0).status());
         assertEquals(trainer.getId(), responsePage.getContent().get(0).trainerId());
         assertEquals(trainer.getSpecialization(), responsePage.getContent().get(0).specialization());
-        verify(trainerDAO, only()).findAll(any(Pageable.class));
+        verify(trainerRepository, only()).findAll(any(Pageable.class));
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
     void testFindById() {
-        when(trainerDAO.findById(1L)).thenReturn(Optional.of(trainer));
+        Long id = 1L;
 
-        Optional<TrainerResponse> response = trainerService.findById(1L);
+        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
+
+        Optional<TrainerResponse> response = trainerService.findById(id);
 
         assertTrue(response.isPresent());
         assertEquals(trainer.getUser().getId(), response.get().userId());
         assertEquals(trainer.getUser().getFirstName(), response.get().firstName());
         assertEquals(trainer.getUser().getLastName(), response.get().lastName());
-        assertEquals(trainer.getUser().getUserName(), response.get().userName());
+        assertEquals(trainer.getUser().getUsername(), response.get().userName());
         assertEquals(trainer.getUser().getStatus(), response.get().status());
         assertEquals(trainer.getId(), response.get().trainerId());
         assertEquals(trainer.getSpecialization(), response.get().specialization());
-        verify(trainerDAO, only()).findById(1L);
+        verify(trainerRepository, only()).findById(id);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
     void testFindByIdNotFound() {
-        when(trainerDAO.findById(1L)).thenReturn(Optional.empty());
+        Long id = 1L;
 
-        Optional<TrainerResponse> response = trainerService.findById(1L);
+        when(trainerRepository.findById(id)).thenReturn(Optional.empty());
+
+        Optional<TrainerResponse> response = trainerService.findById(id);
 
         assertFalse(response.isPresent());
-        verify(trainerDAO, only()).findById(1L);
+        verify(trainerRepository, only()).findById(id);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testMergeById() {
-        when(trainerDAO.changeById(1L, trainer)).thenReturn(trainer);
-        when(trainerDAO.findById(1L)).thenReturn(Optional.ofNullable(trainer));
+    void testFindByUsername() {
+        String username = "John.Doe";
 
-        TrainerResponse response = trainerService.mergeById(1L, request);
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
+
+        Optional<TrainerResponse> response = trainerService.findByUsername(username);
+
+        assertTrue(response.isPresent());
+        assertEquals(trainer.getUser().getId(), response.get().userId());
+        assertEquals(trainer.getUser().getFirstName(), response.get().firstName());
+        assertEquals(trainer.getUser().getLastName(), response.get().lastName());
+        assertEquals(trainer.getUser().getUsername(), response.get().userName());
+        assertEquals(trainer.getUser().getStatus(), response.get().status());
+        assertEquals(trainer.getId(), response.get().trainerId());
+        assertEquals(trainer.getSpecialization(), response.get().specialization());
+        verify(trainerRepository, only()).findByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testFindByUsernameNotFound() {
+        String username = "John.Doe";
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        Optional<TrainerResponse> response = trainerService.findByUsername(username);
+
+        assertFalse(response.isPresent());
+        verify(trainerRepository, only()).findByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testMergeById() {
+        Long id = 1L;
+
+        when(trainerRepository.findById(id)).thenReturn(Optional.ofNullable(trainer));
+
+        TrainerResponse response = trainerService.mergeById(id, request);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getId(), response.userId());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getUserName(), response.userName());
+        assertEquals(trainer.getUser().getUsername(), response.userName());
         assertEquals(trainer.getUser().getStatus(), response.status());
         assertEquals(trainer.getId(), response.trainerId());
         assertEquals(trainer.getSpecialization(), response.specialization());
-        verify(trainerDAO, times(1)).findById(1L);
-        verify(trainerDAO, times(1)).changeById(1L, trainer);
+        verify(trainerRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testMergeByIdTraineeNotFound() {
-        when(trainerDAO.findById(1L)).thenReturn(Optional.empty());
+    void testMergeByIdTraineeNotFound() {
+        Long id = 1L;
+
+        when(trainerRepository.findById(id)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainerService.mergeById(1L, request));
+                assertThrows(ResponseStatusException.class, () -> trainerService.mergeById(id, request));
 
         assertEquals("404 NOT_FOUND \"Trainer with id '1' not found\"", exception.getMessage());
 
-        verify(trainerDAO, times(1)).findById(anyLong());
-        verify(trainerDAO, times(0)).changeById(1L, trainer);
+        verify(trainerRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testChangeStatusByIdEqualStatus() {
+    void testMergeByUsername() {
+        String username = "John.Doe";
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainer));
+
+        TrainerResponse response = trainerService.mergeByUsername(username, request);
+
+        assertNotNull(response);
+        assertEquals(trainer.getUser().getId(), response.userId());
+        assertEquals(trainer.getUser().getFirstName(), response.firstName());
+        assertEquals(trainer.getUser().getLastName(), response.lastName());
+        assertEquals(trainer.getUser().getUsername(), response.userName());
+        assertEquals(trainer.getUser().getStatus(), response.status());
+        assertEquals(trainer.getId(), response.trainerId());
+        assertEquals(trainer.getSpecialization(), response.specialization());
+        verify(trainerRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testMergeByUsernameNotFound() {
+        String username = "John.Doe";
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> trainerService.mergeByUsername(username, request));
+
+        assertEquals("404 NOT_FOUND \"Trainer with user name 'John.Doe' not found\"", exception.getMessage());
+
+        verify(trainerRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testChangeStatusByIdEqualStatus() {
+        Long id = 1L;
         var status = UserStatus.ACTIVE;
 
-        when(trainerDAO.findById(1L)).thenReturn(Optional.ofNullable(trainer));
-        when(trainerDAO.changeById(1L, trainer)).thenReturn(trainer);
+        when(trainerRepository.findById(id)).thenReturn(Optional.ofNullable(trainer));
 
         TrainerResponse response = trainerService.changeStatusById(1L, status);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
-        verify(trainerDAO, times(1)).findById(1L);
-        verify(trainerDAO, times(0)).changeById(1L, trainer);
+        verify(trainerRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testChangeStatusByIdNotEqualStatus() {
+    void testChangeStatusByIdNotEqualStatus() {
+        Long id = 1L;
         var status = UserStatus.SUSPEND;
 
-        when(trainerDAO.findById(1L)).thenReturn(Optional.ofNullable(trainer));
-        when(trainerDAO.changeById(1L, trainer)).thenReturn(trainer);
+        when(trainerRepository.findById(id)).thenReturn(Optional.ofNullable(trainer));
 
-        TrainerResponse response = trainerService.changeStatusById(1L, status);
+        TrainerResponse response = trainerService.changeStatusById(id, status);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
-        verify(trainerDAO, times(1)).findById(1L);
-        verify(trainerDAO, times(1)).changeById(1L, trainer);
+        verify(trainerRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testChangePasswordById() {
-        PasswordEncoder controlEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
+    void testChangeStatusByUsernameEqualStatus() {
+        String username = "John.Doe";
+        var status = UserStatus.ACTIVE;
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainer));
+
+        TrainerResponse response = trainerService.changeStatusByUsername(username, status);
+
+        assertNotNull(response);
+        assertEquals(trainer.getUser().getStatus(), response.status());
+        verify(trainerRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testChangeStatusByUsernameNotEqualStatus() {
+        String username = "John.Doe";
+        var status = UserStatus.SUSPEND;
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainer));
+
+        TrainerResponse response = trainerService.changeStatusByUsername(username, status);
+
+        assertNotNull(response);
+        assertEquals(trainer.getUser().getStatus(), response.status());
+        verify(trainerRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testChangePasswordById() {
+        Long id = 1L;
+        int passwordStrength = 10;
+
+        PasswordEncoder controlEncoder = new BCryptPasswordEncoder(passwordStrength, new SecureRandom());
         OverridePasswordRequest request = new OverridePasswordRequest("aB9dE4fGhJ");
         String encodePassword = "$2a$10$Y.2j9U6qwbgBtYFgZZi7nu0j96f.CRdSV9pNYw7N.ELH1nv/2905C";
 
-        when(trainerDAO.findById(1L)).thenReturn(Optional.ofNullable(trainer));
+        when(trainerRepository.findById(id)).thenReturn(Optional.ofNullable(trainer));
         when(passwordEncoder.encode(request.password())).thenReturn(encodePassword);
-        when(trainerDAO.changeById(1L, trainer)).thenReturn(trainer);
 
-        TrainerResponse response = trainerService.changePasswordById(1L, request);
+        TrainerResponse response = trainerService.changePasswordById(id, request);
 
         assertNotNull(response);
         assertTrue(controlEncoder.matches(request.password(), encodePassword));
         assertEquals(trainer.getUser().getId(), response.userId());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getUserName(), response.userName());
+        assertEquals(trainer.getUser().getUsername(), response.userName());
         assertEquals(trainer.getUser().getStatus(), response.status());
         assertEquals(trainer.getId(), response.trainerId());
         assertEquals(trainer.getSpecialization(), response.specialization());
-        verify(trainerDAO, times(1)).findById(1L);
-        verify(trainerDAO, times(1)).changeById(1L, trainer);
+        verify(trainerRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testChangePasswordByIdTrainerNotFound() {
-        OverridePasswordRequest request = new OverridePasswordRequest("aB9dE4fGhJ");
+    void testChangePasswordByIdTrainerNotFound() {
+        Long id = 1L;
+        var request = new OverridePasswordRequest("aB9dE4fGhJ");
 
-        when(trainerDAO.findById(1L)).thenReturn(Optional.empty());
+        when(trainerRepository.findById(id)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainerService.changePasswordById(1L, request));
+                assertThrows(ResponseStatusException.class, () -> trainerService.changePasswordById(id, request));
 
         assertEquals("404 NOT_FOUND \"Trainer with id '1' not found\"", exception.getMessage());
 
-        verify(trainerDAO, times(1)).findById(anyLong());
-        verify(trainerDAO, times(0)).changeById(anyLong(), any(Trainer.class));
+        verify(trainerRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    public void testDelete() {
-        doNothing().when(trainerDAO).deleteById(1L);
+    void testChangePasswordByUsername() {
+        String username = "John.Doe";
+        int passwordStrength = 10;
+        PasswordEncoder controlEncoder = new BCryptPasswordEncoder(passwordStrength, new SecureRandom());
+        OverridePasswordRequest request = new OverridePasswordRequest("aB9dE4fGhJ");
+        String encodePassword = "$2a$10$Y.2j9U6qwbgBtYFgZZi7nu0j96f.CRdSV9pNYw7N.ELH1nv/2905C";
 
-        trainerService.deleteById(1L);
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainer));
+        when(passwordEncoder.encode(request.password())).thenReturn(encodePassword);
 
-        verify(trainerDAO, only()).deleteById(1L);
+        TrainerResponse response = trainerService.changePasswordByUsername(username, request);
+
+        assertNotNull(response);
+        assertTrue(controlEncoder.matches(request.password(), encodePassword));
+        assertEquals(trainer.getUser().getId(), response.userId());
+        assertEquals(trainer.getUser().getFirstName(), response.firstName());
+        assertEquals(trainer.getUser().getLastName(), response.lastName());
+        assertEquals(trainer.getUser().getUsername(), response.userName());
+        assertEquals(trainer.getUser().getStatus(), response.status());
+        assertEquals(trainer.getId(), response.trainerId());
+        assertEquals(trainer.getSpecialization(), response.specialization());
+        verify(trainerRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testChangePasswordByUsernameNotFound() {
+        String username = "John.Doe";
+        var request = new OverridePasswordRequest("aB9dE4fGhJ");
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> trainerService.changePasswordByUsername(username, request));
+
+        assertEquals("404 NOT_FOUND \"Trainer with user name 'John.Doe' not found\"", exception.getMessage());
+
+        verify(trainerRepository, times(1)).findByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testDeleteById() {
+        Long id = 1L;
+
+        doNothing().when(trainerRepository).deleteById(id);
+
+        trainerService.deleteById(id);
+
+        verify(trainerRepository, times(1)).deleteById(id);
+        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testDeleteByUsername() {
+        String username = "John.Doe";
+
+        doNothing().when(trainerRepository).deleteByUsername(username);
+
+        trainerService.deleteByUsername(username);
+
+        verify(trainerRepository, times(1)).deleteByUsername(username);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     private Trainer getTrainer() {
         var trainer1 = new Trainer();
         trainer1.setId(1L);
-        trainer1.setSpecialization("Box");
+        trainer1.setSpecialization(Specialization.PERSONAL_TRAINER);
         trainer1.setUser(getUser());
         return trainer1;
     }
@@ -277,7 +456,7 @@ public class TrainerServiceTest {
         user.setId(1L);
         user.setFirstName("John");
         user.setLastName("Doe");
-        user.setUserName("John.Doe");
+        user.setUsername("John.Doe");
         user.setPassword("aB9dE4fGhJ");
         user.setStatus(UserStatus.ACTIVE);
         return user;

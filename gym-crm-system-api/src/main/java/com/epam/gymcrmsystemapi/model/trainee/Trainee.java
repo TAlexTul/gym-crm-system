@@ -1,17 +1,32 @@
 package com.epam.gymcrmsystemapi.model.trainee;
 
+import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.user.User;
+import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
+import java.util.Set;
 
+@Entity
+@Table(name = "trainees")
 public class Trainee {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "date_of_birth")
     private OffsetDateTime dateOfBirth;
+
+    @Column
     private String address;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private User user;
+
+    @ManyToMany(mappedBy = "trainees")
+    private Set<Training> trainings;
 
     public Trainee() {
     }
@@ -54,6 +69,14 @@ public class Trainee {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Set<Training> getTrainings() {
+        return trainings;
+    }
+
+    public void setTrainings(Set<Training> trainings) {
+        this.trainings = trainings;
     }
 
     @Override

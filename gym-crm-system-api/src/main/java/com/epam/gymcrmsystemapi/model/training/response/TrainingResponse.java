@@ -1,34 +1,29 @@
 package com.epam.gymcrmsystemapi.model.training.response;
 
+import com.epam.gymcrmsystemapi.model.trainee.Trainee;
+import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.training.TrainingType;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 
 public record TrainingResponse(Long id,
-                               String traineeFirstName,
-                               String traineeLastName,
-                               String traineeNickName,
-                               String trainerUserName,
-                               String trainerLastName,
-                               String trainerNickName,
+                               Set<Trainee> trainees,
+                               Set<Trainer> trainers,
                                String trainingName,
-                               TrainingType trainingType,
+                               List<TrainingType> trainingTypes,
                                OffsetDateTime trainingDate,
-                               Duration trainingDuration) {
+                               Long trainingDuration) {
 
     public static TrainingResponse fromTraining(Training training) {
         return new TrainingResponse(
                 training.getId(),
-                training.getTrainee().getUser().getFirstName(),
-                training.getTrainee().getUser().getLastName(),
-                training.getTrainee().getUser().getUserName(),
-                training.getTrainer().getUser().getFirstName(),
-                training.getTrainer().getUser().getLastName(),
-                training.getTrainer().getUser().getUserName(),
+                training.getTrainees(),
+                training.getTrainers(),
                 training.getTrainingName(),
-                training.getTrainingType(),
+                training.getTrainingTypes(),
                 training.getTrainingDate(),
                 training.getTrainingDuration()
         );
@@ -39,12 +34,8 @@ public record TrainingResponse(Long id,
                 training.getId(),
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
                 training.getTrainingName(),
-                training.getTrainingType(),
+                training.getTrainingTypes(),
                 training.getTrainingDate(),
                 training.getTrainingDuration()
         );

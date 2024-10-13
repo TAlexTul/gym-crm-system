@@ -2,32 +2,60 @@ package com.epam.gymcrmsystemapi.model.training;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
+import jakarta.persistence.*;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+@Entity
+@Table(name = "trainings")
 public class Training {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Trainee trainee;
-    private Trainer trainer;
+
+    @ManyToMany
+    @JoinTable(
+            joinColumns = @JoinColumn(name = "training_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "trainee_id", referencedColumnName = "id")
+    )
+    private Set<Trainee> trainees = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            joinColumns = @JoinColumn(name = "training_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "trainer_id", referencedColumnName = "id")
+    )
+    private Set<Trainer> trainers;
+
+    @Column(name = "training_name", nullable = false)
     private String trainingName;
-    private TrainingType trainingType;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_types_id")
+    private List<TrainingType> trainingTypes;
+
+    @Column(name = "training_date", nullable = false)
     private OffsetDateTime trainingDate;
-    private Duration trainingDuration;
+
+    @Column(name = "training_duration", nullable = false)
+    private Long trainingDuration;
 
     public Training() {
     }
 
-    public Training(Long id, Trainee trainee, Trainer trainer,
-                    String trainingName, TrainingType trainingType,
-                    OffsetDateTime trainingDate, Duration trainingDuration) {
+    public Training(Long id, Set<Trainee> trainees, Set<Trainer> trainers,
+                    String trainingName, List<TrainingType> trainingTypes,
+                    OffsetDateTime trainingDate, Long trainingDuration) {
         this.id = id;
-        this.trainee = trainee;
-        this.trainer = trainer;
+        this.trainees = trainees;
+        this.trainers = trainers;
         this.trainingName = trainingName;
-        this.trainingType = trainingType;
+        this.trainingTypes = trainingTypes;
         this.trainingDate = trainingDate;
         this.trainingDuration = trainingDuration;
     }
@@ -40,20 +68,20 @@ public class Training {
         this.id = id;
     }
 
-    public Trainee getTrainee() {
-        return trainee;
+    public Set<Trainee> getTrainees() {
+        return trainees;
     }
 
-    public void setTrainee(Trainee trainee) {
-        this.trainee = trainee;
+    public void setTrainees(Set<Trainee> trainees) {
+        this.trainees = trainees;
     }
 
-    public Trainer getTrainer() {
-        return trainer;
+    public Set<Trainer> getTrainers() {
+        return trainers;
     }
 
-    public void setTrainer(Trainer trainer) {
-        this.trainer = trainer;
+    public void setTrainers(Set<Trainer> trainers) {
+        this.trainers = trainers;
     }
 
     public String getTrainingName() {
@@ -64,12 +92,12 @@ public class Training {
         this.trainingName = trainingName;
     }
 
-    public TrainingType getTrainingType() {
-        return trainingType;
+    public List<TrainingType> getTrainingTypes() {
+        return trainingTypes;
     }
 
-    public void setTrainingType(TrainingType trainingType) {
-        this.trainingType = trainingType;
+    public void setTrainingTypes(List<TrainingType> trainingTypes) {
+        this.trainingTypes = trainingTypes;
     }
 
     public OffsetDateTime getTrainingDate() {
@@ -80,11 +108,11 @@ public class Training {
         this.trainingDate = trainingDate;
     }
 
-    public Duration getTrainingDuration() {
+    public Long getTrainingDuration() {
         return trainingDuration;
     }
 
-    public void setTrainingDuration(Duration trainingDuration) {
+    public void setTrainingDuration(Long trainingDuration) {
         this.trainingDuration = trainingDuration;
     }
 
@@ -95,13 +123,12 @@ public class Training {
         Training training = (Training) o;
         return Objects.equals(id, training.id)
                 && Objects.equals(trainingName, training.trainingName)
-                && trainingType == training.trainingType
                 && Objects.equals(trainingDate, training.trainingDate)
                 && Objects.equals(trainingDuration, training.trainingDuration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, trainingName, trainingType, trainingDate, trainingDuration);
+        return Objects.hash(id, trainingName, trainingDate, trainingDuration);
     }
 }

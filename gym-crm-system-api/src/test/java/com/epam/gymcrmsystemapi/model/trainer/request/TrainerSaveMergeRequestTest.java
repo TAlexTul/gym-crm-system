@@ -1,5 +1,6 @@
 package com.epam.gymcrmsystemapi.model.trainer.request;
 
+import com.epam.gymcrmsystemapi.model.trainer.Specialization;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -27,7 +28,7 @@ public class TrainerSaveMergeRequestTest {
         var request = new TrainerSaveMergeRequest(
                 "John",
                 "Doe",
-                "Fitness"
+                Specialization.PERSONAL_TRAINER
         );
 
         Set<ConstraintViolation<TrainerSaveMergeRequest>> violations = validator.validate(request);
@@ -40,7 +41,7 @@ public class TrainerSaveMergeRequestTest {
         var request = new TrainerSaveMergeRequest(
                 "",
                 "Doe",
-                "Fitness"
+                Specialization.PERSONAL_TRAINER
         );
 
         Set<ConstraintViolation<TrainerSaveMergeRequest>> violations = validator.validate(request);
@@ -54,7 +55,7 @@ public class TrainerSaveMergeRequestTest {
         var request = new TrainerSaveMergeRequest(
                 "John",
                 "",
-                "Fitness"
+                Specialization.PERSONAL_TRAINER
         );
 
         Set<ConstraintViolation<TrainerSaveMergeRequest>> violations = validator.validate(request);
@@ -64,16 +65,16 @@ public class TrainerSaveMergeRequestTest {
     }
 
     @Test
-    void whenSpecializationIsBlank_thenViolationOccurs() {
+    void whenSpecializationIsNull_thenViolationOccurs() {
         var request = new TrainerSaveMergeRequest(
                 "John",
                 "Doe",
-                ""
+                null
         );
 
         Set<ConstraintViolation<TrainerSaveMergeRequest>> violations = validator.validate(request);
 
         assertEquals(1, violations.size(), "Expected one violation for blank specialization");
-        assertEquals("specialization must not be blank", violations.iterator().next().getMessage());
+        assertEquals("specialization must not be null", violations.iterator().next().getMessage());
     }
 }

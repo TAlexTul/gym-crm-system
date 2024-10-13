@@ -1,11 +1,15 @@
-storage:
-  file:
-    path:
-      trainee: trainee.csv
-      trainer: trainer.csv
-      training: training.csv
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: local-dev
 
 password:
   strength: 10
   length: 10
   characters: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always

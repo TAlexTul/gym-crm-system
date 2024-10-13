@@ -1,6 +1,7 @@
 package com.epam.gymcrmsystemapi.model.training.request;
 
 import com.epam.gymcrmsystemapi.model.training.TrainingType;
+import com.epam.gymcrmsystemapi.model.training.Type;
 import com.epam.gymcrmsystemapi.model.training.request.TrainingSaveRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -31,10 +32,10 @@ class TrainingSaveRequestTest {
         var request = new TrainingSaveRequest(
                 1L,
                 2L,
-                "Boxing",
-                TrainingType.STRENGTH,
+                "Training 1",
+                new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 OffsetDateTime.now(),
-                Duration.ofHours(1).plusMinutes(30)
+                300000L
         );
 
         Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
@@ -47,10 +48,10 @@ class TrainingSaveRequestTest {
         var request = new TrainingSaveRequest(
                 -1L,
                 2L,
-                "Boxing",
-                TrainingType.STRENGTH,
+                "Training 1",
+                new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 OffsetDateTime.now(),
-                Duration.ofHours(1).plusMinutes(30)
+                300000L
         );
 
         Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
@@ -61,13 +62,13 @@ class TrainingSaveRequestTest {
 
     @Test
     void whenTrainerIdIsNegative_thenViolationOccurs() {
-        TrainingSaveRequest request = new TrainingSaveRequest(
+        var request = new TrainingSaveRequest(
                 1L,
                 -2L,
-                "Boxing",
-                TrainingType.STRENGTH,
+                "Training 1",
+                new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 OffsetDateTime.now(),
-                Duration.ofHours(1).plusMinutes(30)
+                300000L
         );
 
         Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
@@ -78,13 +79,13 @@ class TrainingSaveRequestTest {
 
     @Test
     void whenTrainingNameIsBlank_thenViolationOccurs() {
-        TrainingSaveRequest request = new TrainingSaveRequest(
+        var request = new TrainingSaveRequest(
                 1L,
                 2L,
                 "",
-                TrainingType.STRENGTH,
+                new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 OffsetDateTime.now(),
-                Duration.ofHours(1).plusMinutes(30)
+                300000L
         );
 
         Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
@@ -95,13 +96,13 @@ class TrainingSaveRequestTest {
 
     @Test
     void whenTrainingTypeIsNull_thenViolationOccurs() {
-        TrainingSaveRequest request = new TrainingSaveRequest(
+        var request = new TrainingSaveRequest(
                 1L,
                 2L,
-                "Boxing",
+                "Training 1",
                 null,
                 OffsetDateTime.now(),
-                Duration.ofHours(1).plusMinutes(30)
+                300000L
         );
 
         Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
@@ -112,13 +113,13 @@ class TrainingSaveRequestTest {
 
     @Test
     void whenTrainingDateIsNull_thenViolationOccurs() {
-        TrainingSaveRequest request = new TrainingSaveRequest(
+        var request = new TrainingSaveRequest(
                 1L,
                 2L,
-                "Boxing",
-                TrainingType.STRENGTH,
+                "Training 1",
+                new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 null,
-                Duration.ofHours(1).plusMinutes(30)
+                300000L
         );
 
         Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
@@ -129,18 +130,18 @@ class TrainingSaveRequestTest {
 
     @Test
     void whenTrainingDurationIsNull_thenViolationOccurs() {
-        TrainingSaveRequest request = new TrainingSaveRequest(
+        var request = new TrainingSaveRequest(
                 1L,
                 2L,
-                "Boxing",
-                TrainingType.STRENGTH,
+                "Training 1",
+                new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 OffsetDateTime.now(),
-                null
+                0L
         );
 
         Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
 
         assertEquals(1, violations.size(), "Expected one violation for null training duration");
-        assertEquals("training duration must not be null", violations.iterator().next().getMessage());
+        assertEquals("trainee traineeId must be positive", violations.iterator().next().getMessage());
     }
 }

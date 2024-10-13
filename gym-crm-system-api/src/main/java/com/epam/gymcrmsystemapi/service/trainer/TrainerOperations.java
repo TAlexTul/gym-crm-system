@@ -17,12 +17,22 @@ public interface TrainerOperations {
 
     Optional<TrainerResponse> findById(long id);
 
+    Optional<TrainerResponse> findByUsername(String username);
+
     TrainerResponse mergeById(long id, TrainerSaveMergeRequest request);
+
+    TrainerResponse mergeByUsername(String username, TrainerSaveMergeRequest request);
 
     TrainerResponse changeStatusById(long id, UserStatus status);
 
+    TrainerResponse changeStatusByUsername(String username, UserStatus status);
+
     TrainerResponse changePasswordById(long id, OverridePasswordRequest request);
 
+    TrainerResponse changePasswordByUsername(String username, OverridePasswordRequest request);
+
     void deleteById(long id);
+
+    void deleteByUsername(String username);
 
 }
