@@ -3,6 +3,11 @@ package com.epam.gymcrmsystemapi.service;
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainee.request.TraineeSaveMergeRequest;
 import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
+import com.epam.gymcrmsystemapi.model.trainer.Specialization;
+import com.epam.gymcrmsystemapi.model.trainer.Trainer;
+import com.epam.gymcrmsystemapi.model.training.Training;
+import com.epam.gymcrmsystemapi.model.training.TrainingType;
+import com.epam.gymcrmsystemapi.model.training.Type;
 import com.epam.gymcrmsystemapi.model.user.OverridePasswordRequest;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
@@ -26,6 +31,8 @@ import java.lang.reflect.Method;
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,6 +54,8 @@ class TraineeServiceTest {
 
     private Trainee trainee;
 
+    private Training training;
+
     private TraineeSaveMergeRequest request;
 
     @BeforeEach
@@ -55,6 +64,7 @@ class TraineeServiceTest {
         ReflectionTestUtils.setField(traineeService, "passwordLength", 10);
         ReflectionTestUtils.setField(traineeService, "passwordCharacters", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()");
         trainee = getTrainee();
+        training = getTraining();
         request = new TraineeSaveMergeRequest(
                 "John",
                 "Doe",
@@ -436,14 +446,17 @@ class TraineeServiceTest {
         Long id = 1L;
 
         when(traineeRepository.findById(id)).thenReturn(Optional.ofNullable(trainee));
-        doNothing().when(trainingRepository).deleteAllByTrainee(trainee);
+        when(trainingRepository.findAllByTrainees(trainee)).thenReturn(List.of(training));
+        doNothing().when(trainingRepository).delete(training);
         doNothing().when(traineeRepository).deleteById(id);
 
         traineeService.deleteById(id);
 
-        verify(trainingRepository, times(1)).deleteAllByTrainee(trainee);
         verify(traineeRepository, times(1)).findById(id);
+        verify(trainingRepository, times(1)).findAllByTrainees(trainee);
+        verify(trainingRepository, times(1)).delete(training);
         verify(traineeRepository, times(1)).deleteById(id);
+        verifyNoMoreInteractions(trainingRepository);
         verifyNoMoreInteractions(traineeRepository);
     }
 
@@ -452,15 +465,30 @@ class TraineeServiceTest {
         String username = "John.Doe";
 
         when(traineeRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainee));
-        doNothing().when(trainingRepository).deleteAllByTrainee(trainee);
+        when(trainingRepository.findAllByTrainees(trainee)).thenReturn(List.of(training));
+        doNothing().when(trainingRepository).delete(training);
         doNothing().when(traineeRepository).deleteByUsername(username);
 
         traineeService.deleteByUsername(username);
 
-        verify(trainingRepository, times(1)).deleteAllByTrainee(trainee);
         verify(traineeRepository, times(1)).findByUsername(username);
+        verify(trainingRepository, times(1)).findAllByTrainees(trainee);
+        verify(trainingRepository, times(1)).delete(training);
         verify(traineeRepository, times(1)).deleteByUsername(username);
+        verifyNoMoreInteractions(trainingRepository);
         verifyNoMoreInteractions(traineeRepository);
+    }
+
+    private Training getTraining() {
+        var training = new Training();
+        training.setId(1L);
+        training.setTrainees(new HashSet<>(List.of(getTrainee())));
+        training.setTrainers(new HashSet<>(List.of(getTrainer())));
+        training.setTrainingName("Training 1");
+        training.setTrainingTypes(List.of(new TrainingType(Type.CARDIO_WORKOUT, Type.CARDIO_WORKOUT)));
+        training.setTrainingDate(OffsetDateTime.now());
+        training.setTrainingDuration(300000L);
+        return training;
     }
 
     private Trainee getTrainee() {
@@ -468,16 +496,35 @@ class TraineeServiceTest {
         trainee.setId(1L);
         trainee.setDateOfBirth(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"));
         trainee.setAddress("123 Main St");
-        trainee.setUser(getUser());
+        trainee.setUser(getUser1());
         return trainee;
     }
 
-    private User getUser() {
+    private Trainer getTrainer() {
+        var trainer = new Trainer();
+        trainer.setId(1L);
+        trainer.setSpecialization(Specialization.PERSONAL_TRAINER);
+        trainer.setUser(getUser2());
+        return trainer;
+    }
+
+    private User getUser1() {
         var user = new User();
         user.setId(1L);
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setUsername("John.Doe");
+        user.setPassword("aB9dE4fGhJ");
+        user.setStatus(UserStatus.ACTIVE);
+        return user;
+    }
+
+    private User getUser2() {
+        var user = new User();
+        user.setId(1L);
+        user.setFirstName("Jane");
+        user.setLastName("Jenkins");
+        user.setUsername("Jane.Jenkins");
         user.setPassword("aB9dE4fGhJ");
         user.setStatus(UserStatus.ACTIVE);
         return user;

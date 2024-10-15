@@ -55,9 +55,9 @@ public class TrainingService implements TrainingOperations {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TrainingResponse> listOf(String traineeUsername, String trainerUsername,
-                                         OffsetDateTime fromDate, OffsetDateTime toDate,
-                                         Type trainingType, Pageable pageable) {
+    public Page<TrainingResponse> filterBy(String traineeUsername, String trainerUsername,
+                                           OffsetDateTime fromDate, OffsetDateTime toDate,
+                                           Type trainingType, Pageable pageable) {
         Specification<Training> spec = createSpecification(traineeUsername, trainerUsername, fromDate, toDate, trainingType);
         return trainingRepository.findAll(spec, pageable)
                 .map(TrainingResponse::fromTrainingWithBasicAttributes);
@@ -97,10 +97,10 @@ public class TrainingService implements TrainingOperations {
     }
 
     private Training save(TrainingSaveRequest request) {
-        Trainee trainee = traineeRepository.findById(request.traineeId())
-                .orElseThrow(() -> TraineeExceptions.traineeNotFound(request.traineeId()));
-        Trainer trainer = trainerRepository.findById(request.trainerId())
-                .orElseThrow(() -> TrainerExceptions.trainerNotFound(request.trainerId()));
+        Trainee trainee = traineeRepository.findByUsername(request.traineeUsername())
+                .orElseThrow(() -> TraineeExceptions.traineeNotFound(request.traineeUsername()));
+        Trainer trainer = trainerRepository.findByUsername(request.trainerUsername())
+                .orElseThrow(() -> TrainerExceptions.trainerNotFound(request.trainerUsername()));
 
         var training = new Training();
         training.setTrainees(Set.of(trainee));

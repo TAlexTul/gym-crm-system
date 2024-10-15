@@ -1,5 +1,6 @@
 package com.epam.gymcrmsystemapi.model.trainee;
 
+import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.user.User;
 import jakarta.persistence.*;
@@ -28,15 +29,24 @@ public class Trainee {
     @ManyToMany(mappedBy = "trainees")
     private Set<Training> trainings;
 
+    @ManyToMany
+    @JoinTable(
+            joinColumns = @JoinColumn(name = "trainee_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "trainer_id", referencedColumnName = "id")
+    )
+    private Set<Trainer> trainers;
+
     public Trainee() {
     }
 
-    public Trainee(Long id, OffsetDateTime dateOfBirth,
-                   String address, User user) {
+    public Trainee(Long id, OffsetDateTime dateOfBirth, String address, User user,
+                   Set<Training> trainings, Set<Trainer> trainers) {
         this.id = id;
         this.dateOfBirth = dateOfBirth;
         this.address = address;
         this.user = user;
+        this.trainings = trainings;
+        this.trainers = trainers;
     }
 
     public Long getId() {
@@ -77,6 +87,14 @@ public class Trainee {
 
     public void setTrainings(Set<Training> trainings) {
         this.trainings = trainings;
+    }
+
+    public Set<Trainer> getTrainers() {
+        return trainers;
+    }
+
+    public void setTrainers(Set<Trainer> trainers) {
+        this.trainers = trainers;
     }
 
     @Override

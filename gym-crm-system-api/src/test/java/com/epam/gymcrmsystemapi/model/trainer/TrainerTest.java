@@ -39,7 +39,9 @@ class TrainerTest {
         return new Trainer(
                 ID_TRAINER_1,
                 SPECIALIZATION_1,
-                getUser1()
+                getUser1(),
+                null,
+                null
         );
     }
 
@@ -47,7 +49,9 @@ class TrainerTest {
         return new Trainer(
                 ID_TRAINER_2,
                 SPECIALIZATION_2,
-                getUser2()
+                getUser2(),
+                null,
+                null
         );
     }
 }

@@ -17,9 +17,9 @@ public interface TrainingOperations {
 
     Page<TrainingResponse> list(Pageable pageable);
 
-    Page<TrainingResponse> listOf(String traineeUsername, String trainerUsername,
-                                  OffsetDateTime fromDate, OffsetDateTime toDate,
-                                  Type trainingType, Pageable pageable);
+    Page<TrainingResponse> filterBy(String traineeUsername, String trainerUsername,
+                                    OffsetDateTime fromDate, OffsetDateTime toDate,
+                                    Type trainingType, Pageable pageable);
 
     Page<TrainerResponse> listOfTrainersNotAssignedByTraineeUsername(String username, Pageable pageable);
 

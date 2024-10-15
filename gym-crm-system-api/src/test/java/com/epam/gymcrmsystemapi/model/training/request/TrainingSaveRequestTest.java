@@ -2,7 +2,6 @@ package com.epam.gymcrmsystemapi.model.training.request;
 
 import com.epam.gymcrmsystemapi.model.training.TrainingType;
 import com.epam.gymcrmsystemapi.model.training.Type;
-import com.epam.gymcrmsystemapi.model.training.request.TrainingSaveRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -10,7 +9,6 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -30,8 +28,8 @@ class TrainingSaveRequestTest {
     @Test
     void whenValidTrainingSaveRequest_thenNoViolations() {
         var request = new TrainingSaveRequest(
-                1L,
-                2L,
+                "John",
+                "Doe",
                 "Training 1",
                 new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 OffsetDateTime.now(),
@@ -44,44 +42,10 @@ class TrainingSaveRequestTest {
     }
 
     @Test
-    void whenTraineeIdIsNegative_thenViolationOccurs() {
-        var request = new TrainingSaveRequest(
-                -1L,
-                2L,
-                "Training 1",
-                new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
-                OffsetDateTime.now(),
-                300000L
-        );
-
-        Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
-
-        assertEquals(1, violations.size(), "Expected one violation for negative trainee ID");
-        assertEquals("trainee traineeId must be positive", violations.iterator().next().getMessage());
-    }
-
-    @Test
-    void whenTrainerIdIsNegative_thenViolationOccurs() {
-        var request = new TrainingSaveRequest(
-                1L,
-                -2L,
-                "Training 1",
-                new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
-                OffsetDateTime.now(),
-                300000L
-        );
-
-        Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
-
-        assertEquals(1, violations.size(), "Expected one violation for negative trainer ID");
-        assertEquals("trainer traineeId must be positive", violations.iterator().next().getMessage());
-    }
-
-    @Test
     void whenTrainingNameIsBlank_thenViolationOccurs() {
         var request = new TrainingSaveRequest(
-                1L,
-                2L,
+                "John",
+                "Doe",
                 "",
                 new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 OffsetDateTime.now(),
@@ -97,8 +61,8 @@ class TrainingSaveRequestTest {
     @Test
     void whenTrainingTypeIsNull_thenViolationOccurs() {
         var request = new TrainingSaveRequest(
-                1L,
-                2L,
+                "John",
+                "Doe",
                 "Training 1",
                 null,
                 OffsetDateTime.now(),
@@ -114,8 +78,8 @@ class TrainingSaveRequestTest {
     @Test
     void whenTrainingDateIsNull_thenViolationOccurs() {
         var request = new TrainingSaveRequest(
-                1L,
-                2L,
+                "John",
+                "Doe",
                 "Training 1",
                 new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 null,
@@ -131,8 +95,8 @@ class TrainingSaveRequestTest {
     @Test
     void whenTrainingDurationIsNull_thenViolationOccurs() {
         var request = new TrainingSaveRequest(
-                1L,
-                2L,
+                "John",
+                "Doe",
                 "Training 1",
                 new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING),
                 OffsetDateTime.now(),
@@ -142,6 +106,6 @@ class TrainingSaveRequestTest {
         Set<ConstraintViolation<TrainingSaveRequest>> violations = validator.validate(request);
 
         assertEquals(1, violations.size(), "Expected one violation for null training duration");
-        assertEquals("trainee traineeId must be positive", violations.iterator().next().getMessage());
+        assertEquals("training duration must be positive", violations.iterator().next().getMessage());
     }
 }

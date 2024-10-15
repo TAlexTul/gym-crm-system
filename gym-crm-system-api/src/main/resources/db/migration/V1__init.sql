@@ -38,6 +38,17 @@ create table trainers
         references users (id) on delete cascade
 );
 
+create table trainees_trainers
+(
+    trainee_id bigint,
+    trainer_id bigint,
+    primary key (trainee_id, trainer_id),
+    constraint trainees_trainers_trainee_fk foreign key (trainee_id)
+        references trainees (id),
+    constraint trainees_trainers_trainer_fk foreign key (trainer_id)
+        references trainers (id)
+);
+
 create table training_types
 (
     id   int primary key,

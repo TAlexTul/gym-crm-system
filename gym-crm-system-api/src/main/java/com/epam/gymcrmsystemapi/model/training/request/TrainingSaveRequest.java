@@ -9,11 +9,9 @@ import java.time.OffsetDateTime;
 
 public record TrainingSaveRequest(
 
-        @Positive(message = "trainee traineeId must be positive")
-        long traineeId,
+        String traineeUsername,
 
-        @Positive(message = "trainer traineeId must be positive")
-        long trainerId,
+        String trainerUsername,
 
         @NotBlank(message = "training name must not be blank")
         String trainingName,
@@ -24,7 +22,7 @@ public record TrainingSaveRequest(
         @NotNull(message = "training date must not be null")
         OffsetDateTime trainingDate,
 
-        @Positive(message = "trainee traineeId must be positive")
+        @Positive(message = "training duration must be positive")
         long trainingDuration
 
 ) {

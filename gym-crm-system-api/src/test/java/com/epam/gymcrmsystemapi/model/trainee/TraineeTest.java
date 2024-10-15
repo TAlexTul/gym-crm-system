@@ -41,7 +41,9 @@ class TraineeTest {
                 ID_TRAINEE_1,
                 DATE_OF_BIRTH_1,
                 ADDRESS_1,
-                getUser1()
+                getUser1(),
+                null,
+                null
         );
     }
 
@@ -50,7 +52,9 @@ class TraineeTest {
                 ID_TRAINEE_2,
                 DATE_OF_BIRTH_2,
                 ADDRESS_2,
-                getUser2()
+                getUser2(),
+                null,
+                null
         );
     }
 }

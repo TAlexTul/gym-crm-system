@@ -48,7 +48,7 @@ class TrainingServiceTest {
     private Trainee trainee;
     private Trainer trainer;
     private Training training;
-    private TrainingSaveRequest saveRequest;
+    private TrainingSaveRequest request;
 
     @BeforeEach
     void setUp() {
@@ -57,9 +57,9 @@ class TrainingServiceTest {
         trainee = getTrainee();
         trainer = getTrainer();
         training = getTraining();
-        saveRequest = new TrainingSaveRequest(
-                1L,
-                1L,
+        request = new TrainingSaveRequest(
+                "John.Doe",
+                "Jane.Jenkins",
                 "Training 1",
                 new TrainingType(Type.CARDIO_WORKOUT, Type.CARDIO_WORKOUT),
                 OffsetDateTime.now(),
@@ -68,14 +68,14 @@ class TrainingServiceTest {
 
     @Test
     void testCreateSuccess() {
-        Long traineeId = 1L;
-        Long trainerId = 1L;
+        String traineeUsername = "John.Doe";
+        String trainerUsername = "Jane.Jenkins";
 
-        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(trainee));
-        when(trainerRepository.findById(trainerId)).thenReturn(Optional.of(trainer));
+        when(traineeRepository.findByUsername(traineeUsername)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findByUsername(trainerUsername)).thenReturn(Optional.of(trainer));
         when(trainingRepository.save(any(Training.class))).thenReturn(training);
 
-        TrainingResponse response = trainingService.create(saveRequest);
+        TrainingResponse response = trainingService.create(request);
 
         assertNotNull(response);
         assertEquals(training.getId(), response.id());
@@ -85,8 +85,8 @@ class TrainingServiceTest {
         assertEquals(training.getTrainingTypes(), response.trainingTypes());
         assertEquals(training.getTrainingDate(), response.trainingDate());
         assertEquals(training.getTrainingDuration(), response.trainingDuration());
-        verify(traineeRepository, only()).findById(traineeId);
-        verify(trainerRepository, only()).findById(trainerId);
+        verify(traineeRepository, only()).findByUsername(traineeUsername);
+        verify(trainerRepository, only()).findByUsername(trainerUsername);
         verify(trainingRepository, only()).save(any(Training.class));
         verifyNoMoreInteractions(traineeRepository);
         verifyNoMoreInteractions(trainerRepository);
@@ -95,16 +95,16 @@ class TrainingServiceTest {
 
     @Test
     void testCreateTraineeNotFound() {
-        Long id = 1L;
+        String traineeUsername = "John.Doe";
 
-        when(traineeRepository.findById(id)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername(traineeUsername)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainingService.create(saveRequest));
+                assertThrows(ResponseStatusException.class, () -> trainingService.create(request));
 
-        assertEquals("404 NOT_FOUND \"Trainee with id '1' not found\"", exception.getMessage());
+        assertEquals("404 NOT_FOUND \"Trainee with user name 'John.Doe' not found\"", exception.getMessage());
 
-        verify(trainerRepository, never()).findById(id);
+        verify(trainerRepository, never()).findByUsername(traineeUsername);
         verify(trainingRepository, never()).save(any(Training.class));
         verifyNoMoreInteractions(trainerRepository);
         verifyNoMoreInteractions(trainingRepository);
@@ -112,18 +112,18 @@ class TrainingServiceTest {
 
     @Test
     void testCreateTrainerNotFound() {
-        Long traineeId = 1L;
-        Long trainerId = 1L;
+        String traineeUsername = "John.Doe";
+        String trainerUsername = "Jane.Jenkins";
 
-        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(trainee));
-        when(trainerRepository.findById(trainerId)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername(traineeUsername)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findByUsername(trainerUsername)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainingService.create(saveRequest));
+                assertThrows(ResponseStatusException.class, () -> trainingService.create(request));
 
-        assertEquals("404 NOT_FOUND \"Trainer with id '1' not found\"", exception.getMessage());
+        assertEquals("404 NOT_FOUND \"Trainer with user name 'Jane.Jenkins' not found\"", exception.getMessage());
 
-        verify(traineeRepository, only()).findById(traineeId);
+        verify(traineeRepository, only()).findByUsername(traineeUsername);
         verify(trainingRepository, never()).save(any(Training.class));
         verifyNoMoreInteractions(traineeRepository);
         verifyNoMoreInteractions(trainingRepository);

@@ -4,6 +4,7 @@ import com.epam.gymcrmsystemapi.exceptions.TraineeExceptions;
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainee.request.TraineeSaveMergeRequest;
 import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
+import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.user.OverridePasswordRequest;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
@@ -18,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -114,14 +117,18 @@ public class TraineeService implements TraineeOperations {
     @Override
     public void deleteById(long id) {
         Trainee trainee = getTrainee(id);
-        trainingRepository.deleteAllByTrainee(trainee);
+
+        processTraineeTrainings(trainee);
+
         traineeRepository.deleteById(id);
     }
 
     @Override
     public void deleteByUsername(String username) {
         Trainee trainee = getTrainee(username);
-        trainingRepository.deleteAllByTrainee(trainee);
+
+        processTraineeTrainings(trainee);
+
         traineeRepository.deleteByUsername(username);
     }
 
@@ -210,5 +217,17 @@ public class TraineeService implements TraineeOperations {
         }
 
         return trainee;
+    }
+
+    private void processTraineeTrainings(Trainee trainee) {
+        List<Training> trainings = trainingRepository.findAllByTrainees(trainee);
+        for (Training training : trainings) {
+            Set<Trainee> trainees = training.getTrainees();
+            if (trainees.size() == 1) {
+                trainingRepository.delete(training);
+            } else {
+                trainees.remove(trainee);
+            }
+        }
     }
 }
