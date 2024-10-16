@@ -4,6 +4,7 @@ import com.epam.gymcrmsystemapi.exceptions.TraineeExceptions;
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainee.request.TraineeSaveMergeRequest;
 import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
+import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.user.OverridePasswordRequest;
 import com.epam.gymcrmsystemapi.model.user.User;
@@ -223,10 +224,10 @@ public class TraineeService implements TraineeOperations {
         List<Training> trainings = trainingRepository.findAllByTrainees(trainee);
         for (Training training : trainings) {
             Set<Trainee> trainees = training.getTrainees();
-            if (trainees.size() == 1) {
+            Set<Trainer> trainers = training.getTrainers();
+            trainees.remove(trainee);
+            if (trainees.size() == 0 && trainers.size() == 0) {
                 trainingRepository.delete(training);
-            } else {
-                trainees.remove(trainee);
             }
         }
     }
