@@ -6,10 +6,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TrainerExceptionsTest {
+class TrainerExceptionsTest {
 
     @Test
-    public void testTrainerNotFound_Id() {
+    void testTrainerNotFound_Id() {
         long id = 123;
 
         ResponseStatusException rse = TrainerExceptions.trainerNotFound(id);
@@ -37,5 +37,20 @@ public class TrainerExceptionsTest {
 
         assertEquals(HttpStatus.NOT_FOUND, status);
         assertEquals("Trainer with first name 'John', last name 'Doe' not found", rse.getReason());
+    }
+
+    @Test
+    void testTrainerNotFound_FirstUsername() {
+        String username = "John.Doe";
+
+        ResponseStatusException rse = TrainerExceptions.trainerNotFound(username);
+
+        String message = rse.getMessage();
+        String[] parts = message.split(" ", 3);
+        int statusCode = Integer.parseInt(parts[0]);
+        HttpStatus status = HttpStatus.valueOf(statusCode);
+
+        assertEquals(HttpStatus.NOT_FOUND, status);
+        assertEquals("Trainer with user name 'John.Doe' not found", rse.getReason());
     }
 }

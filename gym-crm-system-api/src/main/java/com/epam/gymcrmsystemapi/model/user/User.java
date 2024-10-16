@@ -1,25 +1,42 @@
 package com.epam.gymcrmsystemapi.model.user;
 
+import jakarta.persistence.*;
+
 import java.util.Objects;
 
+@Entity
+@Table(name = "users")
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "first_name", length = 10, nullable = false)
     private String firstName;
+
+    @Column(name = "last_name", length = 10, nullable = false)
     private String lastName;
-    private String userName;
+
+    @Column(unique = true, nullable = false)
+    private String username;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
     private UserStatus status;
 
     public User() {
     }
 
     public User(Long id, String firstName, String lastName,
-                String userName, String password, UserStatus status) {
+                String username, String password, UserStatus status) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.userName = userName;
+        this.username = username;
         this.password = password;
         this.status = status;
     }
@@ -48,12 +65,12 @@ public class User {
         this.lastName = lastName;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -80,13 +97,13 @@ public class User {
         return Objects.equals(id, user.id)
                 && Objects.equals(firstName, user.firstName)
                 && Objects.equals(lastName, user.lastName)
-                && Objects.equals(userName, user.userName)
+                && Objects.equals(username, user.username)
                 && Objects.equals(password, user.password)
                 && status == user.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, userName, password, status);
+        return Objects.hash(id, firstName, lastName, username, password, status);
     }
 }

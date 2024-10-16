@@ -1,7 +1,6 @@
 package com.epam.gymcrmsystemapi.model.trainee.response;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
-import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,7 @@ class TraineeResponseTest {
         user.setId(1L);
         user.setFirstName("John");
         user.setLastName("Doe");
-        user.setUserName("John.Doe");
+        user.setUsername("John.Doe");
         user.setStatus(UserStatus.ACTIVE);
 
         var trainee = new Trainee();
@@ -32,7 +31,7 @@ class TraineeResponseTest {
         assertEquals(trainee.getUser().getId(), response.userId());
         assertEquals(trainee.getUser().getFirstName(), response.firstName());
         assertEquals(trainee.getUser().getLastName(), response.lastName());
-        assertEquals(trainee.getUser().getUserName(), response.userName());
+        assertEquals(trainee.getUser().getUsername(), response.userName());
         assertEquals(trainee.getUser().getStatus(), response.status());
         assertEquals(trainee.getId(), response.traineeId());
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());

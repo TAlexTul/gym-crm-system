@@ -1,16 +1,19 @@
 package com.epam.gymcrmsystemapi.service;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
+import com.epam.gymcrmsystemapi.model.trainer.Specialization;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
+import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.training.TrainingType;
+import com.epam.gymcrmsystemapi.model.training.Type;
 import com.epam.gymcrmsystemapi.model.training.request.TrainingSaveRequest;
 import com.epam.gymcrmsystemapi.model.training.response.TrainingResponse;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
-import com.epam.gymcrmsystemapi.repository.trainee.TraineeDAO;
-import com.epam.gymcrmsystemapi.repository.trainer.TrainerDAO;
-import com.epam.gymcrmsystemapi.repository.training.TrainingDAO;
+import com.epam.gymcrmsystemapi.repository.TraineeRepository;
+import com.epam.gymcrmsystemapi.repository.TrainerRepository;
+import com.epam.gymcrmsystemapi.repository.TrainingRepository;
 import com.epam.gymcrmsystemapi.service.training.TrainingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,10 +25,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -36,18 +37,18 @@ class TrainingServiceTest {
     private TrainingService trainingService;
 
     @Mock
-    private TraineeDAO traineeDAO;
+    private TraineeRepository traineeRepository;
 
     @Mock
-    private TrainerDAO trainerDAO;
+    private TrainerRepository trainerRepository;
 
     @Mock
-    private TrainingDAO trainingDAO;
+    private TrainingRepository trainingRepository;
 
     private Trainee trainee;
     private Trainer trainer;
     private Training training;
-    private TrainingSaveRequest saveRequest;
+    private TrainingSaveRequest request;
 
     @BeforeEach
     void setUp() {
@@ -56,65 +57,82 @@ class TrainingServiceTest {
         trainee = getTrainee();
         trainer = getTrainer();
         training = getTraining();
-        saveRequest = new TrainingSaveRequest(
-                1L,
-                1L,
-                "Box",
-                TrainingType.STRENGTH,
+        request = new TrainingSaveRequest(
+                "John.Doe",
+                "Jane.Jenkins",
+                "Training 1",
+                new TrainingType(Type.CARDIO_WORKOUT, Type.CARDIO_WORKOUT),
                 OffsetDateTime.now(),
-                Duration.parse("PT1H30M"));
+                300000L);
     }
 
     @Test
     void testCreateSuccess() {
-        when(traineeDAO.findById(1L)).thenReturn(Optional.of(trainee));
-        when(trainerDAO.findById(1L)).thenReturn(Optional.of(trainer));
-        when(trainingDAO.save(any(Training.class))).thenReturn(training);
+        String traineeUsername = "John.Doe";
+        String trainerUsername = "Jane.Jenkins";
 
-        TrainingResponse response = trainingService.create(saveRequest);
+        when(traineeRepository.findByUsername(traineeUsername)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findByUsername(trainerUsername)).thenReturn(Optional.of(trainer));
+        when(trainingRepository.save(any(Training.class))).thenReturn(training);
+
+        TrainingResponse response = trainingService.create(request);
 
         assertNotNull(response);
         assertEquals(training.getId(), response.id());
+        assertEquals(training.getTrainees(), response.trainees());
+        assertEquals(training.getTrainers(), response.trainers());
         assertEquals(training.getTrainingName(), response.trainingName());
-        assertEquals(training.getTrainingType(), response.trainingType());
+        assertEquals(training.getTrainingTypes(), response.trainingTypes());
         assertEquals(training.getTrainingDate(), response.trainingDate());
         assertEquals(training.getTrainingDuration(), response.trainingDuration());
-        verify(traineeDAO, only()).findById(1L);
-        verify(trainerDAO, only()).findById(1L);
-        verify(trainingDAO, only()).save(any(Training.class));
+        verify(traineeRepository, only()).findByUsername(traineeUsername);
+        verify(trainerRepository, only()).findByUsername(trainerUsername);
+        verify(trainingRepository, only()).save(any(Training.class));
+        verifyNoMoreInteractions(traineeRepository);
+        verifyNoMoreInteractions(trainerRepository);
+        verifyNoMoreInteractions(trainingRepository);
     }
 
     @Test
     void testCreateTraineeNotFound() {
-        when(traineeDAO.findById(1L)).thenReturn(Optional.empty());
+        String traineeUsername = "John.Doe";
+
+        when(traineeRepository.findByUsername(traineeUsername)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainingService.create(saveRequest));
+                assertThrows(ResponseStatusException.class, () -> trainingService.create(request));
 
-        assertEquals("404 NOT_FOUND \"Trainee with id '1' not found\"", exception.getMessage());
+        assertEquals("404 NOT_FOUND \"Trainee with user name 'John.Doe' not found\"", exception.getMessage());
 
-        verify(trainerDAO, never()).findById(anyLong());
-        verify(trainingDAO, never()).save(any(Training.class));
+        verify(trainerRepository, never()).findByUsername(traineeUsername);
+        verify(trainingRepository, never()).save(any(Training.class));
+        verifyNoMoreInteractions(trainerRepository);
+        verifyNoMoreInteractions(trainingRepository);
     }
 
     @Test
     void testCreateTrainerNotFound() {
-        when(traineeDAO.findById(1L)).thenReturn(Optional.of(trainee));
-        when(trainerDAO.findById(1L)).thenReturn(Optional.empty());
+        String traineeUsername = "John.Doe";
+        String trainerUsername = "Jane.Jenkins";
+
+        when(traineeRepository.findByUsername(traineeUsername)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findByUsername(trainerUsername)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainingService.create(saveRequest));
+                assertThrows(ResponseStatusException.class, () -> trainingService.create(request));
 
-        assertEquals("404 NOT_FOUND \"Trainer with id '1' not found\"", exception.getMessage());
+        assertEquals("404 NOT_FOUND \"Trainer with user name 'Jane.Jenkins' not found\"", exception.getMessage());
 
-        verify(traineeDAO, only()).findById(1L);
-        verify(trainingDAO, never()).save(any(Training.class));
+        verify(traineeRepository, only()).findByUsername(traineeUsername);
+        verify(trainingRepository, never()).save(any(Training.class));
+        verifyNoMoreInteractions(traineeRepository);
+        verifyNoMoreInteractions(trainingRepository);
     }
 
     @Test
     void testList() {
         Page<Training> trainingPage = new PageImpl<>(Collections.singletonList(training));
-        when(trainingDAO.findAll(any(Pageable.class))).thenReturn(trainingPage);
+        when(trainingRepository.findAll(any(Pageable.class))).thenReturn(trainingPage);
 
         Page<TrainingResponse> responsePage = trainingService.list(Pageable.unpaged());
 
@@ -122,46 +140,103 @@ class TrainingServiceTest {
         assertEquals(1, responsePage.getContent().size());
         assertEquals(training.getId(), responsePage.getContent().get(0).id());
         assertEquals(training.getTrainingName(), responsePage.getContent().get(0).trainingName());
-        assertEquals(training.getTrainingType(), responsePage.getContent().get(0).trainingType());
+        assertEquals(training.getTrainingTypes(), responsePage.getContent().get(0).trainingTypes());
         assertEquals(training.getTrainingDate(), responsePage.getContent().get(0).trainingDate());
         assertEquals(training.getTrainingDuration(), responsePage.getContent().get(0).trainingDuration());
-        verify(trainingDAO, only()).findAll(any(Pageable.class));
+        verify(trainingRepository, only()).findAll(any(Pageable.class));
+        verifyNoMoreInteractions(trainingRepository);
+    }
+
+    @Test
+    void testListOfTrainersNotAssignedByTraineeUsername() {
+        String username = "John.Doe";
+        Page<Trainer> trainerPage = new PageImpl<>(Collections.singletonList(trainer));
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAllNotAssignedToTrainee(trainee, Pageable.unpaged())).thenReturn(trainerPage);
+
+        Page<TrainerResponse> responsePage = trainingService.listOfTrainersNotAssignedByTraineeUsername(
+                username, Pageable.unpaged());
+
+        assertEquals(1, responsePage.getContent().size());
+        assertEquals(trainer.getUser().getId(), responsePage.getContent().get(0).userId());
+        assertEquals(trainer.getUser().getFirstName(), responsePage.getContent().get(0).firstName());
+        assertEquals(trainer.getUser().getLastName(), responsePage.getContent().get(0).lastName());
+        assertEquals(trainer.getUser().getUsername(), responsePage.getContent().get(0).userName());
+        assertEquals(trainer.getUser().getStatus(), responsePage.getContent().get(0).status());
+        assertEquals(trainer.getId(), responsePage.getContent().get(0).trainerId());
+        assertEquals(trainer.getSpecialization(), responsePage.getContent().get(0).specialization());
+        verify(traineeRepository, only()).findByUsername(username);
+        verify(trainerRepository, only()).findAllNotAssignedToTrainee(trainee, Pageable.unpaged());
+        verifyNoMoreInteractions(traineeRepository);
+        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
     void testFindById() {
-        when(trainingDAO.findById(1L)).thenReturn(Optional.of(training));
+        Long id = 1L;
 
-        Optional<TrainingResponse> response = trainingService.findById(1L);
+        when(trainingRepository.findById(id)).thenReturn(Optional.of(training));
+
+        Optional<TrainingResponse> response = trainingService.findById(id);
 
         assertTrue(response.isPresent());
         assertEquals(training.getId(), response.get().id());
+        assertEquals(training.getTrainees(), response.get().trainees());
+        assertEquals(training.getTrainers(), response.get().trainers());
         assertEquals(training.getTrainingName(), response.get().trainingName());
-        assertEquals(training.getTrainingType(), response.get().trainingType());
+        assertEquals(training.getTrainingTypes(), response.get().trainingTypes());
         assertEquals(training.getTrainingDate(), response.get().trainingDate());
         assertEquals(training.getTrainingDuration(), response.get().trainingDuration());
-        verify(trainingDAO, only()).findById(1L);
+        verify(trainingRepository, only()).findById(id);
+        verifyNoMoreInteractions(trainingRepository);
     }
 
     @Test
     void testFindByIdNotFound() {
-        when(trainingDAO.findById(1L)).thenReturn(Optional.empty());
+        Long id = 1L;
 
-        Optional<TrainingResponse> response = trainingService.findById(1L);
+        when(trainingRepository.findById(id)).thenReturn(Optional.empty());
+
+        Optional<TrainingResponse> response = trainingService.findById(id);
 
         assertFalse(response.isPresent());
-        verify(trainingDAO, only()).findById(1L);
+        verify(trainingRepository, only()).findById(id);
+        verifyNoMoreInteractions(trainingRepository);
+    }
+
+    @Test
+    void testUpdateTraineeSetOfTrainers() {
+        String username = "Jane.Jenkins";
+        Long trainingId = 1L;
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
+        when(trainingRepository.findById(trainingId)).thenReturn(Optional.of(training));
+
+        TrainingResponse response = trainingService.updateTraineeSetOfTrainers(trainingId, List.of("Jane.Jenkins"));
+
+        assertEquals(training.getId(), response.id());
+        assertEquals(training.getTrainees(), response.trainees());
+        assertEquals(training.getTrainers(), response.trainers());
+        assertEquals(training.getTrainingName(), response.trainingName());
+        assertEquals(training.getTrainingTypes(), response.trainingTypes());
+        assertEquals(training.getTrainingDate(), response.trainingDate());
+        assertEquals(training.getTrainingDuration(), response.trainingDuration());
+        verify(trainerRepository, times(1)).findByUsername(username);
+        verify(trainingRepository, times(1)).findById(trainingId);
+        verifyNoMoreInteractions(trainerRepository);
+        verifyNoMoreInteractions(trainingRepository);
     }
 
     private Training getTraining() {
         var training = new Training();
         training.setId(1L);
-        training.setTrainee(getTrainee());
-        training.setTrainer(getTrainer());
+        training.setTrainees(new HashSet<>(List.of(getTrainee())));
+        training.setTrainers(new HashSet<>(List.of(getTrainer())));
         training.setTrainingName("Training 1");
-        training.setTrainingType(TrainingType.STRENGTH);
+        training.setTrainingTypes(List.of(new TrainingType(Type.CARDIO_WORKOUT, Type.CARDIO_WORKOUT)));
         training.setTrainingDate(OffsetDateTime.now());
-        training.setTrainingDuration(Duration.parse("PT1H30M"));
+        training.setTrainingDuration(300000L);
         return training;
     }
 
@@ -170,24 +245,35 @@ class TrainingServiceTest {
         trainee.setId(1L);
         trainee.setDateOfBirth(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"));
         trainee.setAddress("123 Main St");
-        trainee.setUser(getUser());
+        trainee.setUser(getUser1());
         return trainee;
     }
 
     private Trainer getTrainer() {
         var trainer = new Trainer();
         trainer.setId(1L);
-        trainer.setSpecialization("Box");
-        trainer.setUser(getUser());
+        trainer.setSpecialization(Specialization.PERSONAL_TRAINER);
+        trainer.setUser(getUser2());
         return trainer;
     }
 
-    private User getUser() {
+    private User getUser1() {
+        var user = new User();
+        user.setId(1L);
+        user.setFirstName("Jane");
+        user.setLastName("Jenkins");
+        user.setUsername("Jane.Jenkins");
+        user.setPassword("aB9dE4fGhJ");
+        user.setStatus(UserStatus.ACTIVE);
+        return user;
+    }
+
+    private User getUser2() {
         var user = new User();
         user.setId(1L);
         user.setFirstName("John");
         user.setLastName("Doe");
-        user.setUserName("John.Doe");
+        user.setUsername("John.Doe");
         user.setPassword("aB9dE4fGhJ");
         user.setStatus(UserStatus.ACTIVE);
         return user;

@@ -38,4 +38,19 @@ class TraineeExceptionsTest {
         assertEquals(HttpStatus.NOT_FOUND, status);
         assertEquals("Trainee with first name 'John', last name 'Doe' not found", rse.getReason());
     }
+
+    @Test
+    void testTraineeNotFound_Username() {
+        String username = "John.Doe";
+
+        ResponseStatusException rse = TraineeExceptions.traineeNotFound(username);
+
+        String message = rse.getMessage();
+        String[] parts = message.split(" ", 3);
+        int statusCode = Integer.parseInt(parts[0]);
+        HttpStatus status = HttpStatus.valueOf(statusCode);
+
+        assertEquals(HttpStatus.NOT_FOUND, status);
+        assertEquals("Trainee with user name 'John.Doe' not found", rse.getReason());
+    }
 }

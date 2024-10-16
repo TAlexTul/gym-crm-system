@@ -16,4 +16,9 @@ public final class TraineeExceptions {
         return new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "Trainee with first name '" + firstName + "', last name '" + lastName + "' not found");
     }
+
+    public static ResponseStatusException traineeNotFound(String username) {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Trainee with user name '" + username + "' not found");
+    }
 }

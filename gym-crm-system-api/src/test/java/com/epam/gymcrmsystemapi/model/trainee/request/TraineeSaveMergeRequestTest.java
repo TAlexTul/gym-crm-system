@@ -1,6 +1,5 @@
 package com.epam.gymcrmsystemapi.model.trainee.request;
 
-import com.epam.gymcrmsystemapi.model.trainee.request.TraineeSaveMergeRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -14,7 +13,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TraineeSaveMergeRequestTest {
+class TraineeSaveMergeRequestTest {
 
     private Validator validator;
 

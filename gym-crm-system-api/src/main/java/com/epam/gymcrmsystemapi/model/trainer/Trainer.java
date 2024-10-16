@@ -1,22 +1,44 @@
 package com.epam.gymcrmsystemapi.model.trainer;
 
+import com.epam.gymcrmsystemapi.model.trainee.Trainee;
+import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.user.User;
+import jakarta.persistence.*;
 
 import java.util.Objects;
+import java.util.Set;
 
+@Entity
+@Table(name = "trainers")
 public class Trainer extends User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String specialization;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private Specialization specialization;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private User user;
+
+    @ManyToMany(mappedBy = "trainers")
+    private Set<Training> trainings;
+
+    @ManyToMany(mappedBy = "trainers")
+    private Set<Trainee> trainees;
 
     public Trainer() {
     }
 
-    public Trainer(Long id, String specialization, User user) {
+    public Trainer(Long id, Specialization specialization, User user,
+                   Set<Training> trainings, Set<Trainee> trainees) {
         this.id = id;
         this.specialization = specialization;
         this.user = user;
+        this.trainings = trainings;
+        this.trainees = trainees;
     }
 
     @Override
@@ -29,11 +51,11 @@ public class Trainer extends User {
         this.id = id;
     }
 
-    public String getSpecialization() {
+    public Specialization getSpecialization() {
         return specialization;
     }
 
-    public void setSpecialization(String specialization) {
+    public void setSpecialization(Specialization specialization) {
         this.specialization = specialization;
     }
 
@@ -43,6 +65,22 @@ public class Trainer extends User {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Set<Training> getTrainings() {
+        return trainings;
+    }
+
+    public void setTrainings(Set<Training> trainings) {
+        this.trainings = trainings;
+    }
+
+    public Set<Trainee> getTrainees() {
+        return trainees;
+    }
+
+    public void setTrainees(Set<Trainee> trainees) {
+        this.trainees = trainees;
     }
 
     @Override

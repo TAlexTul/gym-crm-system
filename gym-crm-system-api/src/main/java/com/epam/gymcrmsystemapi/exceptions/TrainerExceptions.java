@@ -16,4 +16,9 @@ public final class TrainerExceptions {
         return new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "Trainer with first name '" + firstName + "', last name '" + lastName + "' not found");
     }
+
+    public static ResponseStatusException trainerNotFound(String username) {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Trainer with user name '" + username + "' not found");
+    }
 }

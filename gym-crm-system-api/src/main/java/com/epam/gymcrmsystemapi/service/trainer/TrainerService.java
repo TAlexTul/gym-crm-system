@@ -1,25 +1,26 @@
 package com.epam.gymcrmsystemapi.service.trainer;
 
-import com.epam.gymcrmsystemapi.exceptions.TraineeExceptions;
 import com.epam.gymcrmsystemapi.exceptions.TrainerExceptions;
+import com.epam.gymcrmsystemapi.model.trainer.Specialization;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveMergeRequest;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.user.OverridePasswordRequest;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
-import com.epam.gymcrmsystemapi.repository.trainer.TrainerDAO;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.epam.gymcrmsystemapi.repository.TrainerRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class TrainerService implements TrainerOperations {
 
     @Value("${password.length}")
@@ -27,13 +28,12 @@ public class TrainerService implements TrainerOperations {
     @Value("${password.characters}")
     private String passwordCharacters;
 
-    @Autowired
-    private TrainerDAO trainerDAO;
+    private final TrainerRepository trainerRepository;
 
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+    public TrainerService(TrainerRepository trainerRepository, PasswordEncoder passwordEncoder) {
+        this.trainerRepository = trainerRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -44,70 +44,100 @@ public class TrainerService implements TrainerOperations {
 
     @Override
     public Page<TrainerResponse> list(Pageable pageable) {
-        return trainerDAO.findAll(pageable)
+        return trainerRepository.findAll(pageable)
                 .map(TrainerResponse::fromTrainer);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<TrainerResponse> findById(long id) {
-        return trainerDAO.findById(id)
+        return trainerRepository.findById(id)
+                .map(TrainerResponse::fromTrainer);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<TrainerResponse> findByUsername(String username) {
+        return trainerRepository.findByUsername(username)
                 .map(TrainerResponse::fromTrainer);
     }
 
     @Override
     public TrainerResponse mergeById(long id, TrainerSaveMergeRequest request) {
-        Trainer trainer = trainerDAO.findById(id)
-                .orElseThrow(() -> TrainerExceptions.trainerNotFound(id));
+        Trainer trainer = getTrainer(id);
+        return TrainerResponse.fromTrainer(merge(trainer, request));
+    }
+
+    @Override
+    public TrainerResponse mergeByUsername(String username, TrainerSaveMergeRequest request) {
+        Trainer trainer = getTrainer(username);
         return TrainerResponse.fromTrainer(merge(trainer, request));
     }
 
     @Override
     public TrainerResponse changeStatusById(long id, UserStatus status) {
-        Trainer trainer = trainerDAO.findById(id)
-                .orElseThrow(() -> TraineeExceptions.traineeNotFound(id));
+        Trainer trainer = getTrainer(id);
         if (trainer.getUser().getStatus() != status) {
             trainer.getUser().setStatus(status);
-            return TrainerResponse.fromTrainer(trainerDAO.changeById(id, trainer));
-        } else {
-            return TrainerResponse.fromTrainer(trainer);
         }
+        return TrainerResponse.fromTrainer(trainer);
+    }
+
+    @Override
+    public TrainerResponse changeStatusByUsername(String username, UserStatus status) {
+        Trainer trainer = getTrainer(username);
+        if (trainer.getUser().getStatus() != status) {
+            trainer.getUser().setStatus(status);
+        }
+        return TrainerResponse.fromTrainer(trainer);
     }
 
     @Override
     public TrainerResponse changePasswordById(long id, OverridePasswordRequest request) {
-        Trainer trainer = trainerDAO.findById(id)
-                .orElseThrow(() -> TrainerExceptions.trainerNotFound(id));
+        Trainer trainer = getTrainer(id);
         trainer.getUser().setPassword(passwordEncoder.encode(request.password()));
-        return TrainerResponse.fromTrainer(trainerDAO.changeById(id, trainer));
+        return TrainerResponse.fromTrainer(trainer);
+    }
+
+    @Override
+    public TrainerResponse changePasswordByUsername(String username, OverridePasswordRequest request) {
+        Trainer trainer = getTrainer(username);
+        trainer.getUser().setPassword(passwordEncoder.encode(request.password()));
+        return TrainerResponse.fromTrainer(trainer);
     }
 
     @Override
     public void deleteById(long id) {
-        trainerDAO.deleteById(id);
+        trainerRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteByUsername(String username) {
+        trainerRepository.deleteByUsername(username);
     }
 
     private Trainer save(TrainerSaveMergeRequest request) {
         var trainer = new Trainer();
         trainer.setSpecialization(request.specialization());
-        trainer.setUser(getUser(request));
-        return trainerDAO.save(trainer);
+        trainer.setUser(createUser(request));
+        return trainerRepository.save(trainer);
     }
 
-    private User getUser(TrainerSaveMergeRequest request) {
+    private User createUser(TrainerSaveMergeRequest request) {
         var user = new User();
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
-        user.setUserName(calculateUserName(request));
+        user.setUsername(calculateUserName(request));
         user.setPassword(passwordEncoder.encode(generateRandomPassword()));
         user.setStatus(UserStatus.ACTIVE);
         return user;
     }
 
     private String calculateUserName(TrainerSaveMergeRequest request) {
-        boolean isExist = trainerDAO.existByFirstNameAndLastName(request.firstName(), request.lastName());
+        boolean isExist = trainerRepository.existsByFirstNameAndLastName(request.firstName(), request.lastName());
         if (isExist) {
-            Trainer trainer = trainerDAO.findByFirstNameAndLastName(request.firstName(), request.lastName())
-                    .orElseThrow(() -> TraineeExceptions.traineeNotFound(request.firstName(), request.lastName()));
+            Trainer trainer = trainerRepository.findByFirstNameAndLastName(request.firstName(), request.lastName())
+                    .orElseThrow(() -> TrainerExceptions.trainerNotFound(request.firstName(), request.lastName()));
             return String.join(".",
                     request.firstName().trim(),
                     request.lastName().trim(),
@@ -132,6 +162,16 @@ public class TrainerService implements TrainerOperations {
         return password.toString();
     }
 
+    private Trainer getTrainer(long id) {
+        return trainerRepository.findById(id)
+                .orElseThrow(() -> TrainerExceptions.trainerNotFound(id));
+    }
+
+    private Trainer getTrainer(String userName) {
+        return trainerRepository.findByUsername(userName)
+                .orElseThrow(() -> TrainerExceptions.trainerNotFound(userName));
+    }
+
     private Trainer merge(Trainer trainer, TrainerSaveMergeRequest request) {
         boolean isNameUpdated = false;
 
@@ -146,15 +186,15 @@ public class TrainerService implements TrainerOperations {
             isNameUpdated = true;
         }
         if (isNameUpdated) {
-            String oldUserName = trainer.getUser().getUserName();
+            String oldUserName = trainer.getUser().getUsername();
             String numericPart = oldUserName.replaceAll("\\D.*", "");
-            trainer.getUser().setUserName(numericPart + calculateUserName(request));
+            trainer.getUser().setUsername(numericPart + calculateUserName(request));
         }
-        String specialization = request.specialization();
+        Specialization specialization = request.specialization();
         if (specialization != null && !specialization.equals(trainer.getSpecialization())) {
             trainer.setSpecialization(specialization);
         }
-        trainerDAO.changeById(trainer.getId(), trainer);
+
         return trainer;
     }
 }
