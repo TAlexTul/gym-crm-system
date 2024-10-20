@@ -1,4 +1,4 @@
-package com.epam.gymcrmsystemapi.model.training;
+package com.epam.gymcrmsystemapi.model.training.type;
 
 import jakarta.persistence.*;
 
@@ -9,7 +9,6 @@ import java.util.Objects;
 public class TrainingType {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Enumerated(EnumType.ORDINAL)
     private Type id;
 

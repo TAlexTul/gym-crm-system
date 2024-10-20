@@ -14,10 +14,7 @@ class TrainingExceptionsTest {
 
         ResponseStatusException rse = TrainingExceptions.trainingNotFound(id);
 
-        String message = rse.getMessage();
-        String[] parts = message.split(" ", 3);
-        int statusCode = Integer.parseInt(parts[0]);
-        HttpStatus status = HttpStatus.valueOf(statusCode);
+        HttpStatus status = HttpStatus.valueOf(rse.getStatusCode().value());
 
         assertEquals(HttpStatus.NOT_FOUND, status);
         assertEquals("Training with id '123' not found", rse.getReason());

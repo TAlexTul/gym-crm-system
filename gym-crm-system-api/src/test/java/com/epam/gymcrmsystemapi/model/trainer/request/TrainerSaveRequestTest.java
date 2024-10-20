@@ -1,6 +1,6 @@
 package com.epam.gymcrmsystemapi.model.trainer.request;
 
-import com.epam.gymcrmsystemapi.model.trainer.Specialization;
+import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -13,7 +13,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TrainerSaveMergeRequestTest {
+public class TrainerSaveRequestTest {
 
     private Validator validator;
 
@@ -25,26 +25,26 @@ public class TrainerSaveMergeRequestTest {
 
     @Test
     void whenValidTrainerSaveMergeRequest_thenNoViolations() {
-        var request = new TrainerSaveMergeRequest(
+        var request = new TrainerSaveRequest(
                 "John",
                 "Doe",
-                Specialization.PERSONAL_TRAINER
+                SpecializationType.PERSONAL_TRAINER
         );
 
-        Set<ConstraintViolation<TrainerSaveMergeRequest>> violations = validator.validate(request);
+        Set<ConstraintViolation<TrainerSaveRequest>> violations = validator.validate(request);
 
         assertTrue(violations.isEmpty(), "Expected no constraint violations");
     }
 
     @Test
     void whenFirstNameIsBlank_thenViolationOccurs() {
-        var request = new TrainerSaveMergeRequest(
+        var request = new TrainerSaveRequest(
                 "",
                 "Doe",
-                Specialization.PERSONAL_TRAINER
+                SpecializationType.PERSONAL_TRAINER
         );
 
-        Set<ConstraintViolation<TrainerSaveMergeRequest>> violations = validator.validate(request);
+        Set<ConstraintViolation<TrainerSaveRequest>> violations = validator.validate(request);
 
         assertEquals(1, violations.size(), "Expected one violation for blank first name");
         assertEquals("first name must not be blank", violations.iterator().next().getMessage());
@@ -52,13 +52,13 @@ public class TrainerSaveMergeRequestTest {
 
     @Test
     void whenLastNameIsBlank_thenViolationOccurs() {
-        var request = new TrainerSaveMergeRequest(
+        var request = new TrainerSaveRequest(
                 "John",
                 "",
-                Specialization.PERSONAL_TRAINER
+                SpecializationType.PERSONAL_TRAINER
         );
 
-        Set<ConstraintViolation<TrainerSaveMergeRequest>> violations = validator.validate(request);
+        Set<ConstraintViolation<TrainerSaveRequest>> violations = validator.validate(request);
 
         assertEquals(1, violations.size(), "Expected one violation for blank last name");
         assertEquals("last name must not be blank", violations.iterator().next().getMessage());
@@ -66,13 +66,13 @@ public class TrainerSaveMergeRequestTest {
 
     @Test
     void whenSpecializationIsNull_thenViolationOccurs() {
-        var request = new TrainerSaveMergeRequest(
+        var request = new TrainerSaveRequest(
                 "John",
                 "Doe",
                 null
         );
 
-        Set<ConstraintViolation<TrainerSaveMergeRequest>> violations = validator.validate(request);
+        Set<ConstraintViolation<TrainerSaveRequest>> violations = validator.validate(request);
 
         assertEquals(1, violations.size(), "Expected one violation for blank specialization");
         assertEquals("specialization must not be null", violations.iterator().next().getMessage());

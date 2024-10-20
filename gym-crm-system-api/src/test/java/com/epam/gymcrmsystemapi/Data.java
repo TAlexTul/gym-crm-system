@@ -1,8 +1,9 @@
 package com.epam.gymcrmsystemapi;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
-import com.epam.gymcrmsystemapi.model.trainer.Specialization;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
+import com.epam.gymcrmsystemapi.model.trainer.specialization.Specialization;
+import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 
@@ -33,8 +34,10 @@ public final class Data {
     public static final String ADDRESS_2 = "101 Independence Avenue";
     public static final Long ID_TRAINER_1 = 1L;
     public static final Long ID_TRAINER_2 = 2L;
-    public static final Specialization SPECIALIZATION_1 = Specialization.BODYBUILDING_COACH;
-    public static final Specialization SPECIALIZATION_2 = Specialization.CARDIO_TRAINING_COACH;
+    public static final Specialization SPECIALIZATION_TYPE_1 =
+            new Specialization(SpecializationType.BODYBUILDING_COACH, SpecializationType.BODYBUILDING_COACH);
+    public static final Specialization SPECIALIZATION_TYPE_2 =
+            new Specialization(SpecializationType.CARDIO_TRAINING_COACH, SpecializationType.CARDIO_TRAINING_COACH);
     public static final Long ID_TRAINING_1 = 1L;
     public static final Long ID_TRAINING_2 = 2L;
     public static final String TRAINING_NAME_1 = "Training 1";
@@ -48,7 +51,7 @@ public final class Data {
         return Set.of(
                 new Trainer(
                         ID_TRAINER_1,
-                        SPECIALIZATION_1,
+                        SPECIALIZATION_TYPE_1,
                         getUser1(),
                         null,
                         null
@@ -59,7 +62,7 @@ public final class Data {
         return Set.of(
                 new Trainer(
                         ID_TRAINER_2,
-                        SPECIALIZATION_2,
+                        SPECIALIZATION_TYPE_2,
                         getUser2(),
                         null,
                         null

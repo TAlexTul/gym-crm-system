@@ -1,6 +1,6 @@
-package com.epam.gymcrmsystemapi.model.trainer;
+package com.epam.gymcrmsystemapi.model.trainer.specialization;
 
-public enum Specialization {
+public enum SpecializationType {
 
     PERSONAL_TRAINER,
     FITNESS_AND_WELLNESS_TRAINER,

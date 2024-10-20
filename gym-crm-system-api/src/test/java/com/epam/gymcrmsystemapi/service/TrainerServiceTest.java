@@ -1,13 +1,20 @@
 package com.epam.gymcrmsystemapi.service;
 
-import com.epam.gymcrmsystemapi.model.trainer.Specialization;
+import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
-import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveMergeRequest;
+import com.epam.gymcrmsystemapi.model.trainer.request.TrainerMergeRequest;
+import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveRequest;
+import com.epam.gymcrmsystemapi.model.trainer.response.TrainerRegistrationResponse;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
-import com.epam.gymcrmsystemapi.model.user.OverridePasswordRequest;
+import com.epam.gymcrmsystemapi.model.trainer.specialization.Specialization;
+import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
+import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
+import com.epam.gymcrmsystemapi.repository.SpecializationRepository;
+import com.epam.gymcrmsystemapi.repository.TraineeRepository;
 import com.epam.gymcrmsystemapi.repository.TrainerRepository;
+import com.epam.gymcrmsystemapi.repository.UserRepository;
 import com.epam.gymcrmsystemapi.service.trainer.TrainerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +31,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Method;
 import java.security.SecureRandom;
+import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,65 +43,73 @@ class TrainerServiceTest {
 
     @InjectMocks
     private TrainerService trainerService;
-
+    @Mock
+    private SpecializationRepository specializationRepository;
+    @Mock
+    private UserRepository userRepository;
     @Mock
     private TrainerRepository trainerRepository;
-
+    @Mock
+    private TraineeRepository traineeRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
-
-    private Trainer trainer;
-
-    private TrainerSaveMergeRequest request;
+    private final static int PASSWORD_LENGTH = 10;
+    private final static String PASSWORD_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    private final static String OLD_PASSWORD = "aB9dE4fGhJ";
+    private final static String NEW_PASSWORD = "cM5dU4fEhL";
+    private final static int PASSWORD_STRENGTH = 10;
+    private final PasswordEncoder controlEncoder = new BCryptPasswordEncoder(PASSWORD_STRENGTH, new SecureRandom());
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(trainerService, "passwordLength", 10);
-        ReflectionTestUtils.setField(trainerService, "passwordCharacters", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()");
-        trainer = getTrainer();
-        request = new TrainerSaveMergeRequest(
-                "John",
-                "Doe",
-                Specialization.PERSONAL_TRAINER
-        );
+        ReflectionTestUtils.setField(trainerService, "passwordLength", PASSWORD_LENGTH);
+        ReflectionTestUtils.setField(trainerService, "passwordCharacters", PASSWORD_CHARACTERS);
     }
 
     @Test
-    void testCreateSuccess() {
+    void testCreate_whenSuccess() {
+        TrainerSaveRequest request = getTrainerSaveRequest();
         String firstName = request.firstName();
         String lastName = request.lastName();
+        String username = String.join(".", firstName, lastName);
+        Trainer trainer = getTrainer();
+        Specialization specialization = trainer.getSpecialization();
+        User user = trainer.getUser();
 
         when(trainerRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(false);
+        when(traineeRepository.existsByUsername(username)).thenReturn(false);
+        when(specializationRepository.findById(request.specializationType())).thenReturn(Optional.of(specialization));
+        when(userRepository.save(any(User.class))).thenReturn(user);
         when(trainerRepository.save(any(Trainer.class))).thenReturn(trainer);
 
-        TrainerResponse response = trainerService.create(request);
+        TrainerRegistrationResponse response = trainerService.create(request);
 
         assertNotNull(response);
-        assertEquals(trainer.getUser().getId(), response.userId());
-        assertEquals(trainer.getUser().getFirstName(), response.firstName());
-        assertEquals(trainer.getUser().getLastName(), response.lastName());
+        assertEquals(trainer.getUser().getId(), response.id());
         assertEquals(trainer.getUser().getUsername(), response.userName());
-        assertEquals(trainer.getUser().getStatus(), response.status());
-        assertEquals(trainer.getId(), response.trainerId());
-        assertEquals(trainer.getSpecialization(), response.specialization());
+        assertEquals(trainer.getUser().getPassword(), response.password());
         verify(trainerRepository, times(1)).existsByFirstNameAndLastName(firstName, lastName);
+        verify(traineeRepository, only()).existsByUsername(username);
+        verify(userRepository, only()).save(any(User.class));
         verify(trainerRepository, times(1)).save(any(Trainer.class));
         verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
     void testPrivateCalculateUsername() throws Exception {
-        String firstName = request.firstName();
-        String lastName = request.lastName();
+        TrainerSaveRequest saveRequest = getTrainerSaveRequest();
+        String firstName = saveRequest.firstName();
+        String lastName = saveRequest.lastName();
+        Trainer trainer = getTrainer();
 
         when(trainerRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(true);
-        when(trainerRepository.findByFirstNameAndLastName(firstName, lastName)).thenReturn(Optional.ofNullable(trainer));
+        when(trainerRepository.findByFirstNameAndLastName(firstName, lastName)).thenReturn(Optional.of(trainer));
 
-        Method method = TrainerService.class.getDeclaredMethod("calculateUserName", TrainerSaveMergeRequest.class);
+        Method method = TrainerService.class.getDeclaredMethod("calculateUsername", String.class, String.class);
         method.setAccessible(true);
 
-        String userName = (String) method.invoke(trainerService, request);
+        String userName = (String) method.invoke(trainerService, firstName, lastName);
 
         assertNotNull(userName);
         assertEquals("John.Doe.1", userName);
@@ -103,23 +120,21 @@ class TrainerServiceTest {
 
     @Test
     void testPrivateGenerateRandomPassword() throws Exception {
-        int passwordLength = 10;
-        String passwordCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
-
         Method method = TrainerService.class.getDeclaredMethod("generateRandomPassword");
         method.setAccessible(true);
 
         String password = (String) method.invoke(trainerService);
 
         assertNotNull(password);
-        assertEquals(passwordLength, password.length());
+        assertEquals(PASSWORD_LENGTH, password.length());
         for (char c : password.toCharArray()) {
-            assertTrue(passwordCharacters.contains(String.valueOf(c)));
+            assertTrue(PASSWORD_CHARACTERS.contains(String.valueOf(c)));
         }
     }
 
     @Test
     void testList() {
+        Trainer trainer = getTrainer();
         Page<Trainer> trainingPage = new PageImpl<>(Collections.singletonList(trainer));
         when(trainerRepository.findAll(any(Pageable.class))).thenReturn(trainingPage);
 
@@ -130,17 +145,53 @@ class TrainerServiceTest {
         assertEquals(trainer.getUser().getId(), responsePage.getContent().get(0).userId());
         assertEquals(trainer.getUser().getFirstName(), responsePage.getContent().get(0).firstName());
         assertEquals(trainer.getUser().getLastName(), responsePage.getContent().get(0).lastName());
-        assertEquals(trainer.getUser().getUsername(), responsePage.getContent().get(0).userName());
+        assertEquals(trainer.getUser().getUsername(), responsePage.getContent().get(0).username());
         assertEquals(trainer.getUser().getStatus(), responsePage.getContent().get(0).status());
         assertEquals(trainer.getId(), responsePage.getContent().get(0).trainerId());
-        assertEquals(trainer.getSpecialization(), responsePage.getContent().get(0).specialization());
         verify(trainerRepository, only()).findAll(any(Pageable.class));
-        verifyNoMoreInteractions(trainerRepository);
+    }
+
+    @Test
+    void testListOfTrainersNotAssignedByTraineeUsername() {
+        String username = "John.Doe";
+        Trainee trainee = getTrainee();
+        Trainer trainer = getTrainer();
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAllNotAssignedToTrainee(trainee)).thenReturn(List.of(trainer));
+
+        List<TrainerResponse> responses = trainerService.listOfTrainersNotAssignedByTraineeUsername(username);
+
+        assertEquals(1, responses.size());
+        assertEquals(trainer.getUser().getId(), responses.get(0).userId());
+        assertEquals(trainer.getUser().getFirstName(), responses.get(0).firstName());
+        assertEquals(trainer.getUser().getLastName(), responses.get(0).lastName());
+        assertEquals(trainer.getUser().getUsername(), responses.get(0).username());
+        assertEquals(trainer.getUser().getStatus(), responses.get(0).status());
+        assertEquals(trainer.getId(), responses.get(0).trainerId());
+        verify(traineeRepository, only()).findByUsername(username);
+        verify(trainerRepository, only()).findAllNotAssignedToTrainee(trainee);
+    }
+
+    @Test
+    void testListOfTrainersNotAssignedByTraineeUsername_whenTraineeIsNotFound() {
+        String username = "John.Doe";
+
+        when(traineeRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class,
+                        () -> trainerService.listOfTrainersNotAssignedByTraineeUsername(username));
+
+        assertEquals("404 NOT_FOUND \"Trainee with user name '" + username + "' not found\"", exception.getMessage());
+
+        verify(traineeRepository, only()).findByUsername(username);
     }
 
     @Test
     void testFindById() {
         Long id = 1L;
+        Trainer trainer = getTrainer();
 
         when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
 
@@ -150,16 +201,20 @@ class TrainerServiceTest {
         assertEquals(trainer.getUser().getId(), response.get().userId());
         assertEquals(trainer.getUser().getFirstName(), response.get().firstName());
         assertEquals(trainer.getUser().getLastName(), response.get().lastName());
-        assertEquals(trainer.getUser().getUsername(), response.get().userName());
+        assertEquals(trainer.getUser().getUsername(), response.get().username());
         assertEquals(trainer.getUser().getStatus(), response.get().status());
         assertEquals(trainer.getId(), response.get().trainerId());
-        assertEquals(trainer.getSpecialization(), response.get().specialization());
+
+        assertEquals(trainer.getSpecialization().getId().ordinal(),
+                response.get().specialization().id());
+        assertEquals(trainer.getSpecialization().getSpecialization(),
+                response.get().specialization().specializationType());
+
         verify(trainerRepository, only()).findById(id);
-        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    void testFindByIdNotFound() {
+    void testFindById_whenTrainerIsNotFound() {
         Long id = 1L;
 
         when(trainerRepository.findById(id)).thenReturn(Optional.empty());
@@ -168,12 +223,12 @@ class TrainerServiceTest {
 
         assertFalse(response.isPresent());
         verify(trainerRepository, only()).findById(id);
-        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
     void testFindByUsername() {
         String username = "John.Doe";
+        Trainer trainer = getTrainer();
 
         when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
 
@@ -183,16 +238,20 @@ class TrainerServiceTest {
         assertEquals(trainer.getUser().getId(), response.get().userId());
         assertEquals(trainer.getUser().getFirstName(), response.get().firstName());
         assertEquals(trainer.getUser().getLastName(), response.get().lastName());
-        assertEquals(trainer.getUser().getUsername(), response.get().userName());
+        assertEquals(trainer.getUser().getUsername(), response.get().username());
         assertEquals(trainer.getUser().getStatus(), response.get().status());
         assertEquals(trainer.getId(), response.get().trainerId());
-        assertEquals(trainer.getSpecialization(), response.get().specialization());
+
+        assertEquals(trainer.getSpecialization().getId().ordinal(),
+                response.get().specialization().id());
+        assertEquals(trainer.getSpecialization().getSpecialization(),
+                response.get().specialization().specializationType());
+
         verify(trainerRepository, only()).findByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
-    void testFindByUsernameNotFound() {
+    void testFindByUsername_whenTrainerIsNotFound() {
         String username = "John.Doe";
 
         when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
@@ -201,14 +260,15 @@ class TrainerServiceTest {
 
         assertFalse(response.isPresent());
         verify(trainerRepository, only()).findByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
     }
 
     @Test
     void testMergeById() {
         Long id = 1L;
+        TrainerMergeRequest request = getTrainerMergeRequest();
+        Trainer trainer = getTrainer();
 
-        when(trainerRepository.findById(id)).thenReturn(Optional.ofNullable(trainer));
+        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
 
         TrainerResponse response = trainerService.mergeById(id, request);
 
@@ -216,34 +276,40 @@ class TrainerServiceTest {
         assertEquals(trainer.getUser().getId(), response.userId());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getUsername(), response.userName());
+        assertEquals(trainer.getUser().getUsername(), response.username());
         assertEquals(trainer.getUser().getStatus(), response.status());
         assertEquals(trainer.getId(), response.trainerId());
-        assertEquals(trainer.getSpecialization(), response.specialization());
-        verify(trainerRepository, times(1)).findById(id);
-        verifyNoMoreInteractions(trainerRepository);
+
+        assertEquals(trainer.getSpecialization().getId().ordinal(),
+                response.specialization().id());
+        assertEquals(trainer.getSpecialization().getSpecialization(),
+                response.specialization().specializationType());
+
+        verify(trainerRepository, only()).findById(id);
     }
 
     @Test
-    void testMergeByIdTraineeNotFound() {
+    void testMergeById_whenTrainerIsNotFound() {
         Long id = 1L;
+        TrainerMergeRequest request = getTrainerMergeRequest();
 
         when(trainerRepository.findById(id)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
                 assertThrows(ResponseStatusException.class, () -> trainerService.mergeById(id, request));
 
-        assertEquals("404 NOT_FOUND \"Trainer with id '1' not found\"", exception.getMessage());
+        assertEquals("404 NOT_FOUND \"Trainer with id '" + id + "' not found\"", exception.getMessage());
 
-        verify(trainerRepository, times(1)).findById(id);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).findById(id);
     }
 
     @Test
     void testMergeByUsername() {
         String username = "John.Doe";
+        TrainerMergeRequest request = getTrainerMergeRequest();
+        Trainer trainer = getTrainer();
 
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainer));
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
 
         TrainerResponse response = trainerService.mergeByUsername(username, request);
 
@@ -251,172 +317,226 @@ class TrainerServiceTest {
         assertEquals(trainer.getUser().getId(), response.userId());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getUsername(), response.userName());
+        assertEquals(trainer.getUser().getUsername(), response.username());
         assertEquals(trainer.getUser().getStatus(), response.status());
         assertEquals(trainer.getId(), response.trainerId());
-        assertEquals(trainer.getSpecialization(), response.specialization());
-        verify(trainerRepository, times(1)).findByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
+
+        assertEquals(trainer.getSpecialization().getId().ordinal(),
+                response.specialization().id());
+        assertEquals(trainer.getSpecialization().getSpecialization(),
+                response.specialization().specializationType());
+
+        verify(trainerRepository, only()).findByUsername(username);
     }
 
     @Test
-    void testMergeByUsernameNotFound() {
+    void testMergeByUsername_whenTrainerIsNotFound() {
         String username = "John.Doe";
+        TrainerMergeRequest request = getTrainerMergeRequest();
 
         when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
                 assertThrows(ResponseStatusException.class, () -> trainerService.mergeByUsername(username, request));
 
-        assertEquals("404 NOT_FOUND \"Trainer with user name 'John.Doe' not found\"", exception.getMessage());
+        assertEquals(
+                "404 NOT_FOUND \"Trainer with user name '" + username + "' not found\"", exception.getMessage());
 
-        verify(trainerRepository, times(1)).findByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).findByUsername(username);
     }
 
     @Test
-    void testChangeStatusByIdEqualStatus() {
+    void testChangeStatusById_whenStatusIsEqual() {
         Long id = 1L;
+        Trainer trainer = getTrainer();
         var status = UserStatus.ACTIVE;
 
-        when(trainerRepository.findById(id)).thenReturn(Optional.ofNullable(trainer));
+        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
 
         TrainerResponse response = trainerService.changeStatusById(1L, status);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
-        verify(trainerRepository, times(1)).findById(id);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).findById(id);
     }
 
     @Test
-    void testChangeStatusByIdNotEqualStatus() {
+    void testChangeStatusById_whenStatusIsNotEqual() {
         Long id = 1L;
+        Trainer trainer = getTrainer();
         var status = UserStatus.SUSPEND;
 
-        when(trainerRepository.findById(id)).thenReturn(Optional.ofNullable(trainer));
+        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
 
         TrainerResponse response = trainerService.changeStatusById(id, status);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
-        verify(trainerRepository, times(1)).findById(id);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).findById(id);
     }
 
     @Test
-    void testChangeStatusByUsernameEqualStatus() {
+    void testChangeStatusByUsername_whenStatusIsEqual() {
         String username = "John.Doe";
+        Trainer trainer = getTrainer();
         var status = UserStatus.ACTIVE;
 
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainer));
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
 
         TrainerResponse response = trainerService.changeStatusByUsername(username, status);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
-        verify(trainerRepository, times(1)).findByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).findByUsername(username);
     }
 
     @Test
-    void testChangeStatusByUsernameNotEqualStatus() {
+    void testChangeStatusByUsername_whenStatusIsNotEqual() {
         String username = "John.Doe";
+        Trainer trainer = getTrainer();
         var status = UserStatus.SUSPEND;
 
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainer));
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
 
         TrainerResponse response = trainerService.changeStatusByUsername(username, status);
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
-        verify(trainerRepository, times(1)).findByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).findByUsername(username);
     }
 
     @Test
-    void testChangePasswordById() {
+    void testChangeLoginDataById() {
         Long id = 1L;
-        int passwordStrength = 10;
+        OverrideLoginRequest request = new OverrideLoginRequest("John.Doe", OLD_PASSWORD, NEW_PASSWORD);
+        String encodePassword = controlEncoder.encode(request.newPassword());
+        Trainer trainer = getTrainer();
 
-        PasswordEncoder controlEncoder = new BCryptPasswordEncoder(passwordStrength, new SecureRandom());
-        OverridePasswordRequest request = new OverridePasswordRequest("aB9dE4fGhJ");
-        String encodePassword = "$2a$10$Y.2j9U6qwbgBtYFgZZi7nu0j96f.CRdSV9pNYw7N.ELH1nv/2905C";
+        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(request.oldPassword(), trainer.getUser().getPassword()))
+                .thenReturn(true);
+        when(passwordEncoder.encode(request.newPassword())).thenReturn(encodePassword);
 
-        when(trainerRepository.findById(id)).thenReturn(Optional.ofNullable(trainer));
-        when(passwordEncoder.encode(request.password())).thenReturn(encodePassword);
-
-        TrainerResponse response = trainerService.changePasswordById(id, request);
+        TrainerResponse response = trainerService.changeLoginDataById(id, request);
 
         assertNotNull(response);
-        assertTrue(controlEncoder.matches(request.password(), encodePassword));
+        assertTrue(controlEncoder.matches(request.newPassword(), encodePassword));
         assertEquals(trainer.getUser().getId(), response.userId());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getUsername(), response.userName());
+        assertEquals(trainer.getUser().getUsername(), response.username());
         assertEquals(trainer.getUser().getStatus(), response.status());
         assertEquals(trainer.getId(), response.trainerId());
-        assertEquals(trainer.getSpecialization(), response.specialization());
-        verify(trainerRepository, times(1)).findById(id);
-        verifyNoMoreInteractions(trainerRepository);
+
+        assertEquals(trainer.getSpecialization().getId().ordinal(),
+                response.specialization().id());
+        assertEquals(trainer.getSpecialization().getSpecialization(),
+                response.specialization().specializationType());
+
+        verify(trainerRepository, only()).findById(id);
     }
 
     @Test
-    void testChangePasswordByIdTrainerNotFound() {
+    void testChangeLoginDataById_whenPasswordIsNotMatch() {
         Long id = 1L;
-        var request = new OverridePasswordRequest("aB9dE4fGhJ");
+        OverrideLoginRequest request
+                = new OverrideLoginRequest("John.Doe", OLD_PASSWORD, NEW_PASSWORD);
+        String encodePassword = controlEncoder.encode(request.newPassword());
+        Trainer trainer = getTrainer();
+
+        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(request.oldPassword(), trainer.getUser().getPassword()))
+                .thenReturn(false);
+        when(passwordEncoder.encode(request.newPassword())).thenReturn(encodePassword);
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> trainerService.changeLoginDataById(id, request));
+
+        assertEquals("400 BAD_REQUEST \"Password is incorrect\"", exception.getMessage());
+
+        verify(trainerRepository, only()).findById(id);
+    }
+
+    @Test
+    void testChangeLoginDataById_whenTrainerIsNotFound() {
+        Long id = 1L;
+        OverrideLoginRequest request = new OverrideLoginRequest("John.Doe", OLD_PASSWORD, NEW_PASSWORD);
 
         when(trainerRepository.findById(id)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainerService.changePasswordById(id, request));
+                assertThrows(ResponseStatusException.class, () -> trainerService.changeLoginDataById(id, request));
 
-        assertEquals("404 NOT_FOUND \"Trainer with id '1' not found\"", exception.getMessage());
+        assertEquals("404 NOT_FOUND \"Trainer with id '" + id + "' not found\"", exception.getMessage());
 
-        verify(trainerRepository, times(1)).findById(id);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).findById(id);
     }
 
     @Test
-    void testChangePasswordByUsername() {
+    void testChangeLoginDataByUsername() {
         String username = "John.Doe";
-        int passwordStrength = 10;
-        PasswordEncoder controlEncoder = new BCryptPasswordEncoder(passwordStrength, new SecureRandom());
-        OverridePasswordRequest request = new OverridePasswordRequest("aB9dE4fGhJ");
-        String encodePassword = "$2a$10$Y.2j9U6qwbgBtYFgZZi7nu0j96f.CRdSV9pNYw7N.ELH1nv/2905C";
+        OverrideLoginRequest request = new OverrideLoginRequest(username, OLD_PASSWORD, NEW_PASSWORD);
+        String encodePassword = controlEncoder.encode(request.newPassword());
+        Trainer trainer = getTrainer();
 
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.ofNullable(trainer));
-        when(passwordEncoder.encode(request.password())).thenReturn(encodePassword);
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(request.oldPassword(), trainer.getUser().getPassword()))
+                .thenReturn(true);
+        when(passwordEncoder.encode(request.newPassword())).thenReturn(encodePassword);
 
-        TrainerResponse response = trainerService.changePasswordByUsername(username, request);
+        TrainerResponse response = trainerService.changeLoginDataByUsername(username, request);
 
         assertNotNull(response);
-        assertTrue(controlEncoder.matches(request.password(), encodePassword));
+        assertTrue(controlEncoder.matches(request.newPassword(), encodePassword));
         assertEquals(trainer.getUser().getId(), response.userId());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getUsername(), response.userName());
+        assertEquals(trainer.getUser().getUsername(), response.username());
         assertEquals(trainer.getUser().getStatus(), response.status());
         assertEquals(trainer.getId(), response.trainerId());
-        assertEquals(trainer.getSpecialization(), response.specialization());
-        verify(trainerRepository, times(1)).findByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
+
+        assertEquals(trainer.getSpecialization().getId().ordinal(),
+                response.specialization().id());
+        assertEquals(trainer.getSpecialization().getSpecialization(),
+                response.specialization().specializationType());
+
+        verify(trainerRepository, only()).findByUsername(username);
     }
 
     @Test
-    void testChangePasswordByUsernameNotFound() {
+    void testChangeLoginDataByUsername_whenPasswordIsNotMatch() {
         String username = "John.Doe";
-        var request = new OverridePasswordRequest("aB9dE4fGhJ");
+        OverrideLoginRequest request = new OverrideLoginRequest(username, OLD_PASSWORD, NEW_PASSWORD);
+        String encodePassword = controlEncoder.encode(request.newPassword());
+        Trainer trainer = getTrainer();
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(request.oldPassword(), trainer.getUser().getPassword()))
+                .thenReturn(false);
+        when(passwordEncoder.encode(request.newPassword())).thenReturn(encodePassword);
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class,
+                        () -> trainerService.changeLoginDataByUsername(username, request));
+
+        assertEquals("400 BAD_REQUEST \"Password is incorrect\"", exception.getMessage());
+
+        verify(trainerRepository, only()).findByUsername(username);
+    }
+
+    @Test
+    void testChangePasswordByUsername_whenTrainerIsNotFound() {
+        String username = "John.Doe";
+        OverrideLoginRequest request = new OverrideLoginRequest(username, OLD_PASSWORD, NEW_PASSWORD);
 
         when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainerService.changePasswordByUsername(username, request));
+                assertThrows(ResponseStatusException.class, () -> trainerService.changeLoginDataByUsername(username, request));
 
-        assertEquals("404 NOT_FOUND \"Trainer with user name 'John.Doe' not found\"", exception.getMessage());
+        assertEquals("404 NOT_FOUND \"Trainer with user name '" + username + "' not found\"", exception.getMessage());
 
-        verify(trainerRepository, times(1)).findByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).findByUsername(username);
     }
 
     @Test
@@ -427,8 +547,7 @@ class TrainerServiceTest {
 
         trainerService.deleteById(id);
 
-        verify(trainerRepository, times(1)).deleteById(id);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).deleteById(id);
     }
 
     @Test
@@ -439,25 +558,63 @@ class TrainerServiceTest {
 
         trainerService.deleteByUsername(username);
 
-        verify(trainerRepository, times(1)).deleteByUsername(username);
-        verifyNoMoreInteractions(trainerRepository);
+        verify(trainerRepository, only()).deleteByUsername(username);
+    }
+
+    private TrainerSaveRequest getTrainerSaveRequest() {
+        return new TrainerSaveRequest(
+                "John",
+                "Doe",
+                SpecializationType.PERSONAL_TRAINER
+        );
+    }
+
+    private TrainerMergeRequest getTrainerMergeRequest() {
+        return new TrainerMergeRequest(
+                "John.Doe",
+                "John",
+                "Doe",
+                UserStatus.ACTIVE,
+                new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)
+        );
+    }
+
+    private Trainee getTrainee() {
+        var trainee = new Trainee();
+        trainee.setId(1L);
+        trainee.setDateOfBirth(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"));
+        trainee.setAddress("123 Main St");
+        trainee.setUser(getUserForTrainee());
+        return trainee;
     }
 
     private Trainer getTrainer() {
-        var trainer1 = new Trainer();
-        trainer1.setId(1L);
-        trainer1.setSpecialization(Specialization.PERSONAL_TRAINER);
-        trainer1.setUser(getUser());
-        return trainer1;
+        var trainer = new Trainer();
+        trainer.setId(1L);
+        trainer.setSpecialization(
+                new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER));
+        trainer.setUser(getUserForTrainer());
+        return trainer;
     }
 
-    private User getUser() {
+    private User getUserForTrainee() {
         var user = new User();
         user.setId(1L);
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setUsername("John.Doe");
-        user.setPassword("aB9dE4fGhJ");
+        user.setPassword(controlEncoder.encode(OLD_PASSWORD));
+        user.setStatus(UserStatus.ACTIVE);
+        return user;
+    }
+
+    private User getUserForTrainer() {
+        var user = new User();
+        user.setId(1L);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setUsername("John.Doe");
+        user.setPassword(controlEncoder.encode(OLD_PASSWORD));
         user.setStatus(UserStatus.ACTIVE);
         return user;
     }

@@ -1,4 +1,4 @@
-package com.epam.gymcrmsystemapi.model.training;
+package com.epam.gymcrmsystemapi.model.training.type;
 
 public enum Type {
 

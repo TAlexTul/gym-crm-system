@@ -13,7 +13,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TraineeSaveMergeRequestTest {
+class TraineeSaveRequestTest {
 
     private Validator validator;
 
@@ -25,28 +25,28 @@ class TraineeSaveMergeRequestTest {
 
     @Test
     void whenValidTraineeSaveMergeRequest_thenNoViolations() {
-        var request = new TraineeSaveMergeRequest(
+        var request = new TraineeSaveRequest(
                 "John",
                 "Doe",
                 OffsetDateTime.now(),
                 "123 Main St"
         );
 
-        Set<ConstraintViolation<TraineeSaveMergeRequest>> violations = validator.validate(request);
+        Set<ConstraintViolation<TraineeSaveRequest>> violations = validator.validate(request);
 
         assertTrue(violations.isEmpty(), "Expected no constraint violations");
     }
 
     @Test
     void whenFirstNameIsBlank_thenViolationOccurs() {
-        var request = new TraineeSaveMergeRequest(
+        var request = new TraineeSaveRequest(
                 "",
                 "Doe",
                 OffsetDateTime.now(),
                 "123 Main St"
         );
 
-        Set<ConstraintViolation<TraineeSaveMergeRequest>> violations = validator.validate(request);
+        Set<ConstraintViolation<TraineeSaveRequest>> violations = validator.validate(request);
 
         assertEquals(1, violations.size(), "Expected one violation for blank first name");
         assertEquals("first name must not be blank", violations.iterator().next().getMessage());
@@ -54,46 +54,16 @@ class TraineeSaveMergeRequestTest {
 
     @Test
     void whenLastNameIsBlank_thenViolationOccurs() {
-        var request = new TraineeSaveMergeRequest(
+        var request = new TraineeSaveRequest(
                 "John",
                 "",
                 OffsetDateTime.now(),
                 "123 Main St"
         );
 
-        Set<ConstraintViolation<TraineeSaveMergeRequest>> violations = validator.validate(request);
+        Set<ConstraintViolation<TraineeSaveRequest>> violations = validator.validate(request);
 
         assertEquals(1, violations.size(), "Expected one violation for blank last name");
         assertEquals("last name must not be blank", violations.iterator().next().getMessage());
-    }
-
-    @Test
-    void whenDateOfBirthIsNull_thenViolationOccurs() {
-        var request = new TraineeSaveMergeRequest(
-                "John",
-                "Doe",
-                null,
-                "123 Main St"
-        );
-
-        Set<ConstraintViolation<TraineeSaveMergeRequest>> violations = validator.validate(request);
-
-        assertEquals(1, violations.size(), "Expected one violation for null date of birth");
-        assertEquals("date of birth must not be null", violations.iterator().next().getMessage());
-    }
-
-    @Test
-    void whenAddressIsBlank_thenViolationOccurs() {
-        var request = new TraineeSaveMergeRequest(
-                "John",
-                "Doe",
-                OffsetDateTime.now(),
-                ""
-        );
-
-        Set<ConstraintViolation<TraineeSaveMergeRequest>> violations = validator.validate(request);
-
-        assertEquals(1, violations.size(), "Expected one violation for blank address");
-        assertEquals("address must not be blank", violations.iterator().next().getMessage());
     }
 }
