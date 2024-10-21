@@ -1,4 +1,4 @@
-package com.epam.gymcrmsystemapi.service;
+package com.epam.gymcrmsystemapi.service.training;
 
 import com.epam.gymcrmsystemapi.model.training.type.TrainingType;
 import com.epam.gymcrmsystemapi.model.training.type.Type;

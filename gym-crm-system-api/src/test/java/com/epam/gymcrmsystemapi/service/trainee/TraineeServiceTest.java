@@ -1,4 +1,4 @@
-package com.epam.gymcrmsystemapi.service;
+package com.epam.gymcrmsystemapi.service.trainee;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainee.request.TraineeChangeTrainersSetRequest;
@@ -19,8 +19,7 @@ import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.TraineeRepository;
 import com.epam.gymcrmsystemapi.repository.TrainerRepository;
 import com.epam.gymcrmsystemapi.repository.TrainingRepository;
-import com.epam.gymcrmsystemapi.repository.UserRepository;
-import com.epam.gymcrmsystemapi.service.trainee.TraineeService;
+import com.epam.gymcrmsystemapi.service.user.UserOperations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,10 +30,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.lang.reflect.Method;
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -50,7 +47,7 @@ class TraineeServiceTest {
     @InjectMocks
     private TraineeService traineeService;
     @Mock
-    private UserRepository userRepository;
+    private UserOperations userOperations;
     @Mock
     private TraineeRepository traineeRepository;
     @Mock
@@ -59,8 +56,6 @@ class TraineeServiceTest {
     private TrainingRepository trainingRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
-    private final static int PASSWORD_LENGTH = 10;
-    private final static String PASSWORD_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
     private final static String OLD_PASSWORD = "aB9dE4fGhJ";
     private final static String NEW_PASSWORD = "cM5dU4fEhL";
     private final static int PASSWORD_STRENGTH = 10;
@@ -69,8 +64,6 @@ class TraineeServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(traineeService, "passwordLength", PASSWORD_LENGTH);
-        ReflectionTestUtils.setField(traineeService, "passwordCharacters", PASSWORD_CHARACTERS);
     }
 
     @Test
@@ -78,13 +71,10 @@ class TraineeServiceTest {
         TraineeSaveRequest request = getSaveRequest();
         String firstName = request.firstName();
         String lastName = request.lastName();
-        String username = String.join(".", firstName, lastName);
         Trainee trainee = getTrainee();
         User user = trainee.getUser();
 
-        when(traineeRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(false);
-        when(trainerRepository.existsByUsername(username)).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userOperations.save(firstName, lastName)).thenReturn(user);
         when(traineeRepository.save(any(Trainee.class))).thenReturn(trainee);
 
         TraineeRegistrationResponse response = traineeService.create(request);
@@ -93,47 +83,8 @@ class TraineeServiceTest {
         assertEquals(trainee.getUser().getId(), response.id());
         assertEquals(trainee.getUser().getUsername(), response.userName());
         assertEquals(trainee.getUser().getPassword(), response.password());
-        verify(traineeRepository, times(1)).existsByFirstNameAndLastName(firstName, lastName);
-        verify(trainerRepository, only()).existsByUsername(username);
-        verify(userRepository, only()).save(any(User.class));
-        verify(traineeRepository, times(1)).save(any(Trainee.class));
-        verifyNoMoreInteractions(traineeRepository);
-    }
-
-    @Test
-    void testPrivateCalculateUsername() throws Exception {
-        TraineeSaveRequest request = getSaveRequest();
-        String firstName = request.firstName();
-        String lastName = request.lastName();
-        Trainee trainee = getTrainee();
-
-        when(traineeRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(true);
-        when(traineeRepository.findByFirstNameAndLastName(firstName, lastName)).thenReturn(Optional.of(trainee));
-
-        Method method = TraineeService.class.getDeclaredMethod("calculateUsername", String.class, String.class);
-        method.setAccessible(true);
-
-        String username = (String) method.invoke(traineeService, firstName, lastName);
-
-        assertNotNull(username);
-        assertEquals("John.Doe.1", username);
-        verify(traineeRepository, times(1)).existsByFirstNameAndLastName(firstName, lastName);
-        verify(traineeRepository, times(1)).findByFirstNameAndLastName(firstName, lastName);
-        verifyNoMoreInteractions(traineeRepository);
-    }
-
-    @Test
-    void testPrivateGenerateRandomPassword() throws Exception {
-        Method method = TraineeService.class.getDeclaredMethod("generateRandomPassword");
-        method.setAccessible(true);
-
-        String password = (String) method.invoke(traineeService);
-
-        assertNotNull(password);
-        assertEquals(PASSWORD_LENGTH, password.length());
-        for (char c : password.toCharArray()) {
-            assertTrue(PASSWORD_CHARACTERS.contains(String.valueOf(c)));
-        }
+        verify(userOperations, only()).save(firstName, lastName);
+        verify(traineeRepository, only()).save(any(Trainee.class));
     }
 
     @Test

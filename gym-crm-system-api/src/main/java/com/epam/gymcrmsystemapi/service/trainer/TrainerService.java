@@ -16,15 +16,13 @@ import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.SpecializationRepository;
 import com.epam.gymcrmsystemapi.repository.TraineeRepository;
 import com.epam.gymcrmsystemapi.repository.TrainerRepository;
-import com.epam.gymcrmsystemapi.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
+import com.epam.gymcrmsystemapi.service.user.UserOperations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,24 +30,19 @@ import java.util.Optional;
 @Transactional
 public class TrainerService implements TrainerOperations {
 
-    @Value("${password.length}")
-    private int passwordLength;
-    @Value("${password.characters}")
-    private String passwordCharacters;
-
+    private final UserOperations userOperations;
     private final SpecializationRepository specializationRepository;
-    private final UserRepository userRepository;
     private final TrainerRepository trainerRepository;
     private final TraineeRepository traineeRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public TrainerService(SpecializationRepository specializationRepository,
-                          UserRepository userRepository,
+    public TrainerService(UserOperations userOperations,
+                          SpecializationRepository specializationRepository,
                           TrainerRepository trainerRepository,
                           TraineeRepository traineeRepository,
                           PasswordEncoder passwordEncoder) {
+        this.userOperations = userOperations;
         this.specializationRepository = specializationRepository;
-        this.userRepository = userRepository;
         this.trainerRepository = trainerRepository;
         this.traineeRepository = traineeRepository;
         this.passwordEncoder = passwordEncoder;
@@ -148,68 +141,14 @@ public class TrainerService implements TrainerOperations {
     }
 
     private Trainer save(TrainerSaveRequest request) {
+        User user = userOperations.save(request.firstName(), request.lastName());
+
         Specialization specialization = specializationRepository.findById(request.specializationType())
                 .orElseThrow(() -> SpecializationExceptions.specializationNotFound(request.specializationType()));
         var trainer = new Trainer();
         trainer.setSpecialization(specialization);
-        trainer.setUser(createUser(request));
+        trainer.setUser(user);
         return trainerRepository.save(trainer);
-    }
-
-    private User createUser(TrainerSaveRequest request) {
-        String username = calculateUsername(request.firstName(), request.lastName());
-        validateRegisteredAsTrainerOrTrainee(username);
-        String password = generateRandomPassword();
-
-        var user = new User();
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setStatus(UserStatus.ACTIVE);
-        userRepository.save(user);
-
-        return new User(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getUsername(),
-                password,
-                user.getStatus()
-        );
-    }
-
-    private void validateRegisteredAsTrainerOrTrainee(String username) {
-        if (traineeRepository.existsByUsername(username)) throw TrainerExceptions.usernameAlreadyRegistered(username);
-    }
-
-    private String calculateUsername(String firstName, String lastName) {
-        boolean isExists = trainerRepository.existsByFirstNameAndLastName(firstName, lastName);
-        if (isExists) {
-            Trainer trainer = trainerRepository.findByFirstNameAndLastName(firstName, lastName)
-                    .orElseThrow(() -> TrainerExceptions.trainerNotFound(firstName, lastName));
-            return String.join(".",
-                    firstName.trim(),
-                    lastName.trim(),
-                    trainer.getUser().getId().toString());
-        } else {
-            return String.join(".",
-                    firstName.trim(),
-                    lastName.trim());
-        }
-    }
-
-    private String generateRandomPassword() {
-        var random = new SecureRandom();
-        var password = new StringBuilder();
-
-        for (int i = 0; i < passwordLength; i++) {
-            int randomIndex = random.nextInt(passwordCharacters.length());
-            char randomChar = passwordCharacters.charAt(randomIndex);
-            password.append(randomChar);
-        }
-
-        return password.toString();
     }
 
     private Trainer getTrainer(long id) {
@@ -223,12 +162,6 @@ public class TrainerService implements TrainerOperations {
     }
 
     private Trainer merge(Trainer trainer, TrainerMergeRequest request) {
-        String oldUsername = trainer.getUser().getUsername();
-        String newUsername = request.username();
-        if (newUsername != null && !newUsername.equals(oldUsername) && trainerRepository.existsByUsername(newUsername)) {
-            throw TrainerExceptions.duplicateUsername(newUsername);
-        }
-
         String firstName = request.firstName();
         if (firstName != null && !firstName.equals(trainer.getUser().getFirstName())) {
             trainer.getUser().setFirstName(firstName);
@@ -236,9 +169,6 @@ public class TrainerService implements TrainerOperations {
         String lastName = request.lastName();
         if (lastName != null && !lastName.equals(trainer.getUser().getLastName())) {
             trainer.getUser().setLastName(lastName);
-        }
-        if (newUsername != null && !newUsername.equals(oldUsername)) {
-            trainer.getUser().setUsername(newUsername);
         }
         Specialization specialization = request.specialization();
         if (specialization != null && !specialization.equals(trainer.getSpecialization())) {

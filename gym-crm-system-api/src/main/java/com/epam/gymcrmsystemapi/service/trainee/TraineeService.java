@@ -17,15 +17,13 @@ import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.TraineeRepository;
 import com.epam.gymcrmsystemapi.repository.TrainerRepository;
 import com.epam.gymcrmsystemapi.repository.TrainingRepository;
-import com.epam.gymcrmsystemapi.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
+import com.epam.gymcrmsystemapi.service.user.UserOperations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -35,23 +33,18 @@ import java.util.Set;
 @Transactional
 public class TraineeService implements TraineeOperations {
 
-    @Value("${password.length}")
-    private int passwordLength;
-    @Value("${password.characters}")
-    private String passwordCharacters;
-
-    private final UserRepository userRepository;
+    private final UserOperations userOperations;
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
     private final TrainingRepository trainingRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public TraineeService(UserRepository userRepository,
+    public TraineeService(UserOperations userOperations,
                           TraineeRepository traineeRepository,
                           TrainerRepository trainerRepository,
                           TrainingRepository trainingRepository,
                           PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+        this.userOperations = userOperations;
         this.traineeRepository = traineeRepository;
         this.trainerRepository = trainerRepository;
         this.trainingRepository = trainingRepository;
@@ -161,67 +154,13 @@ public class TraineeService implements TraineeOperations {
     }
 
     private Trainee save(TraineeSaveRequest request) {
+        User user = userOperations.save(request.firstName(), request.lastName());
+
         var trainee = new Trainee();
         trainee.setDateOfBirth(request.dateOfBirth());
         trainee.setAddress(request.address());
-        trainee.setUser(createUser(request));
+        trainee.setUser(user);
         return traineeRepository.save(trainee);
-    }
-
-    private User createUser(TraineeSaveRequest request) {
-        String username = calculateUsername(request.firstName(), request.lastName());
-        validateRegisteredAsTrainerOrTrainee(username);
-        String password = generateRandomPassword();
-
-        var user = new User();
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setStatus(UserStatus.ACTIVE);
-        userRepository.save(user);
-
-        return new User(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getUsername(),
-                password,
-                user.getStatus()
-        );
-    }
-
-    private void validateRegisteredAsTrainerOrTrainee(String username) {
-        if (trainerRepository.existsByUsername(username)) throw TraineeExceptions.usernameAlreadyRegistered(username);
-    }
-
-    private String calculateUsername(String firstName, String lastName) {
-        boolean isExists = traineeRepository.existsByFirstNameAndLastName(firstName, lastName);
-        if (isExists) {
-            Trainee trainee = traineeRepository.findByFirstNameAndLastName(firstName, lastName)
-                    .orElseThrow(() -> TraineeExceptions.traineeNotFound(firstName, lastName));
-            return String.join(".",
-                    firstName.trim(),
-                    lastName.trim(),
-                    trainee.getUser().getId().toString());
-        } else {
-            return String.join(".",
-                    firstName.trim(),
-                    lastName.trim());
-        }
-    }
-
-    private String generateRandomPassword() {
-        var random = new SecureRandom();
-        var password = new StringBuilder();
-
-        for (int i = 0; i < passwordLength; i++) {
-            int randomIndex = random.nextInt(passwordCharacters.length());
-            char randomChar = passwordCharacters.charAt(randomIndex);
-            password.append(randomChar);
-        }
-
-        return password.toString();
     }
 
     private Trainee getTrainee(long id) {
@@ -235,12 +174,6 @@ public class TraineeService implements TraineeOperations {
     }
 
     private Trainee merge(Trainee trainee, TraineeMergeRequest request) {
-        String oldUsername = trainee.getUser().getUsername();
-        String newUsername = request.username();
-        if (newUsername != null && !newUsername.equals(oldUsername) && traineeRepository.existsByUsername(newUsername)) {
-            throw TraineeExceptions.duplicateUsername(newUsername);
-        }
-
         String firstName = request.firstName();
         if (firstName != null && !firstName.equals(trainee.getUser().getFirstName())) {
             trainee.getUser().setFirstName(firstName);
@@ -248,9 +181,6 @@ public class TraineeService implements TraineeOperations {
         String lastName = request.lastName();
         if (lastName != null && !lastName.equals(trainee.getUser().getLastName())) {
             trainee.getUser().setLastName(lastName);
-        }
-        if (newUsername != null && !newUsername.equals(oldUsername)) {
-            trainee.getUser().setUsername(newUsername);
         }
         OffsetDateTime dateOfBirth = request.dateOfBirth();
         if (dateOfBirth != null && !dateOfBirth.equals(trainee.getDateOfBirth())) {
