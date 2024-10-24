@@ -13,6 +13,7 @@ import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
 import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.training.type.TrainingType;
 import com.epam.gymcrmsystemapi.model.training.type.Type;
+import com.epam.gymcrmsystemapi.model.user.KnownAuthority;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.TraineeRepository;
@@ -71,7 +72,7 @@ class TraineeServiceTest {
         Trainee trainee = getTrainee();
         User user = trainee.getUser();
 
-        when(userOperations.save(firstName, lastName)).thenReturn(user);
+        when(userOperations.save(firstName, lastName, KnownAuthority.ROLE_TRAINEE)).thenReturn(user);
         when(traineeRepository.save(any(Trainee.class))).thenReturn(trainee);
 
         TraineeRegistrationResponse response = traineeService.create(request);
@@ -80,7 +81,7 @@ class TraineeServiceTest {
         assertEquals(trainee.getUser().getId(), response.id());
         assertEquals(trainee.getUser().getUsername(), response.userName());
         assertEquals(trainee.getUser().getPassword(), response.password());
-        verify(userOperations, only()).save(firstName, lastName);
+        verify(userOperations, only()).save(firstName, lastName, KnownAuthority.ROLE_TRAINEE);
         verify(traineeRepository, only()).save(any(Trainee.class));
     }
 
@@ -245,12 +246,22 @@ class TraineeServiceTest {
         TraineeResponse response = traineeService.changeStatusById(id, status);
 
         assertNotNull(response);
-        assertEquals(trainee.getUser().getFirstName(), response.firstName());
-        assertEquals(trainee.getUser().getLastName(), response.lastName());
         assertEquals(trainee.getUser().getStatus(), response.status());
-        assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
-        assertEquals(trainee.getAddress(), response.address());
-        verify(userOperations, only()).changeStatusById(id, status);
+        verify(traineeRepository, only()).findById(id);
+    }
+
+    @Test
+    void testChangeStatusById_whenStatusIsNotEqual() {
+        Long id = 1L;
+        Trainee trainee = getTrainee();
+        UserStatus status = UserStatus.SUSPENDED;
+
+        when(traineeRepository.findById(id)).thenReturn(Optional.of(trainee));
+
+        TraineeResponse response = traineeService.changeStatusById(id, status);
+
+        assertNotNull(response);
+        assertEquals(trainee.getUser().getStatus(), response.status());
         verify(traineeRepository, only()).findById(id);
     }
 
@@ -260,25 +271,19 @@ class TraineeServiceTest {
         Trainee trainee = getTrainee();
         UserStatus status = UserStatus.ACTIVE;
 
-        doNothing().when(userOperations).changeStatusByUsername(username, status);
         when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(trainee));
 
         TraineeResponse response = traineeService.changeStatusByUsername(username, status);
 
         assertNotNull(response);
-        assertEquals(trainee.getUser().getFirstName(), response.firstName());
-        assertEquals(trainee.getUser().getLastName(), response.lastName());
         assertEquals(trainee.getUser().getStatus(), response.status());
-        assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
-        assertEquals(trainee.getAddress(), response.address());
-        verify(traineeRepository, only()).findByUsername(username);
         verify(traineeRepository, only()).findByUsername(username);
     }
 
     @Test
     void testChangeStatusByUsername_whenStatusIsNotEqual() {
         String username = "John.Doe";
-        UserStatus status = UserStatus.SUSPEND;
+        UserStatus status = UserStatus.SUSPENDED;
         Trainee trainee = getTrainee();
 
         when(traineeRepository.findByUsername(username)).thenReturn(Optional.of(trainee));

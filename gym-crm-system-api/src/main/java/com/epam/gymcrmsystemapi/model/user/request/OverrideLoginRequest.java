@@ -1,4 +1,4 @@
-package com.epam.gymcrmsystemapi.model.user;
+package com.epam.gymcrmsystemapi.model.user.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

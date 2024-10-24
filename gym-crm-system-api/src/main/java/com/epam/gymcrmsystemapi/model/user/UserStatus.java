@@ -2,6 +2,6 @@ package com.epam.gymcrmsystemapi.model.user;
 
 public enum UserStatus {
 
-    ACTIVE, SUSPEND
+    ACTIVE, SUSPENDED
 
 }

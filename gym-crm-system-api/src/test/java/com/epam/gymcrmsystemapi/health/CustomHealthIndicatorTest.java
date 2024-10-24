@@ -30,13 +30,20 @@ class CustomHealthIndicatorTest {
     @Test
     void health_WhenEnabledAndApiAvailable_ReturnsUp() {
         ReflectionTestUtils.setField(customHealthIndicator, "enabled", true);
+        ReflectionTestUtils.setField(customHealthIndicator, "host", "http://localhost:8080");
+
         String url = "http://localhost:8080" + Routes.HEALTH_API;
 
         when(restTemplate.getForObject(url, String.class)).thenReturn("Remote API is running");
 
         Health health = customHealthIndicator.health();
 
-        assertEquals(Health.up().withDetail("status", "Available").build(), health);
+        assertEquals(Health.up().build().getStatus(), health.getStatus(),
+                "Expected health status to be UP");
+        assertEquals("Available", health.getDetails().get("custom-status"),
+                "Expected custom-status to be Available");
+        assertEquals("1ms", health.getDetails().get("server-time"),
+                "Expected server-time to be 1ms");
     }
 
     @Test
@@ -45,6 +52,6 @@ class CustomHealthIndicatorTest {
 
         Health health = customHealthIndicator.health();
 
-        assertEquals(Health.up().withDetail("status", "Disabled").build(), health);
+        assertEquals(Health.up().withDetail("custom-status", "Disabled").build(), health);
     }
 }

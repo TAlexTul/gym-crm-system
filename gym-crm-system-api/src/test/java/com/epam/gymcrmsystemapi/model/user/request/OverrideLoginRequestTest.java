@@ -1,6 +1,5 @@
 package com.epam.gymcrmsystemapi.model.user.request;
 
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;

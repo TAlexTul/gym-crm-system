@@ -83,18 +83,7 @@ public class TrainerControllerTest {
 
         when(trainerOperations.findById(trainerId)).thenReturn(Optional.of(response));
 
-        var expectedJson = """
-                {
-                  "firstName": "Jane",
-                  "lastName": "Jenkins",
-                  "status": "ACTIVE",
-                  "specialization": {
-                    "id": 0,
-                    "specializationType": "PERSONAL_TRAINER"
-                  },
-                  "trainees": []
-                }
-                """;
+        String expectedJson = getExpectedJson();
 
         mvc.perform(get(Routes.TRAINERS + "/" + trainerId))
                 .andExpect(status().isOk())
@@ -107,42 +96,30 @@ public class TrainerControllerTest {
     @Test
     void testMergeById() throws Exception {
         var trainerId = 1L;
-        var request = new TrainerMergeRequest("Jane.Jenkins", "Sara", "Lesly",
-                UserStatus.ACTIVE,
+        var request = new TrainerMergeRequest("Sara.Lesly", "Jane", "Jenkins", UserStatus.ACTIVE,
                 new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER));
         var response = new TrainerResponse(
-                "Sara", "Lesly", UserStatus.ACTIVE,
+                "Jane", "Jenkins", UserStatus.ACTIVE,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
 
         when(trainerOperations.mergeById(trainerId, request)).thenReturn(response);
 
-        var expectedJson = """
-                {
-                  "firstName": "Sara",
-                  "lastName": "Lesly",
-                  "status": "ACTIVE",
-                  "specialization": {
-                    "id": 0,
-                    "specializationType": "PERSONAL_TRAINER"
-                  },
-                  "trainees": []
-                }
-                """;
+        var expectedJson = getExpectedJson();
 
         mvc.perform(patch(Routes.TRAINERS + "/" + trainerId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                       "username" : "Jane.Jenkins",
-                                       "firstName": "Sara",
-                                       "lastName": "Lesly",
-                                       "status" : "ACTIVE",
-                                        "specialization": {
-                                           "id": "PERSONAL_TRAINER",
-                                           "specialization": "PERSONAL_TRAINER"
-                                         }
+                                     {
+                                       "username": "Sara.Lesly",
+                                       "firstName": "Jane",
+                                       "lastName": "Jenkins",
+                                       "status": "ACTIVE",
+                                       "specialization": {
+                                         "id": "PERSONAL_TRAINER",
+                                         "specialization": "PERSONAL_TRAINER"
+                                       }
                                      }
                                 """))
                 .andExpect(status().isOk())
@@ -153,28 +130,17 @@ public class TrainerControllerTest {
     }
 
     @Test
-    void testChangeTraineeStatusById() throws Exception {
+    void testChangeTrainerStatusById() throws Exception {
         var trainerId = 1L;
         var status = UserStatus.ACTIVE;
-        var response = new TrainerResponse("Sara", "Lesly", status,
+        var response = new TrainerResponse("Jane", "Jenkins", status,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
 
         when(trainerOperations.changeStatusById(trainerId, status)).thenReturn(response);
 
-        var expectedJson = """
-                {
-                  "firstName": "Sara",
-                  "lastName": "Lesly",
-                  "status": "ACTIVE",
-                  "specialization": {
-                    "id": 0,
-                    "specializationType": "PERSONAL_TRAINER"
-                  },
-                  "trainees": []
-                }
-                """;
+        var expectedJson = getExpectedJson();
         mvc.perform(patch(Routes.TRAINERS + "/" + trainerId + "/status")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content("""
@@ -190,28 +156,17 @@ public class TrainerControllerTest {
     }
 
     @Test
-    void testChangeTraineeStatusByUsername() throws Exception {
+    void testChangeTrainerStatusByUsername() throws Exception {
         var username = "Sara.Lesly";
         var status = UserStatus.ACTIVE;
-        var response = new TrainerResponse("Sara", "Lesly", status,
+        var response = new TrainerResponse("Jane", "Jenkins", status,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
 
         when(trainerOperations.changeStatusByUsername(username, status)).thenReturn(response);
 
-        var expectedJson = """
-                {
-                  "firstName": "Sara",
-                  "lastName": "Lesly",
-                  "status": "ACTIVE",
-                  "specialization": {
-                    "id": 0,
-                    "specializationType": "PERSONAL_TRAINER"
-                  },
-                  "trainees": []
-                }
-                """;
+        var expectedJson = getExpectedJson();
         mvc.perform(patch(Routes.TRAINERS + "/status?username=" + username)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content("""
@@ -236,5 +191,20 @@ public class TrainerControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(trainerOperations, only()).deleteById(id);
+    }
+
+    private String getExpectedJson() {
+        return """
+                {
+                  "firstName": "Jane",
+                  "lastName": "Jenkins",
+                  "status": "ACTIVE",
+                  "specialization": {
+                    "id": 0,
+                    "specializationType": "PERSONAL_TRAINER"
+                  },
+                  "trainees": []
+                }
+                """;
     }
 }
