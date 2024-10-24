@@ -8,7 +8,7 @@ import com.epam.gymcrmsystemapi.model.trainee.request.TraineeSaveRequest;
 import com.epam.gymcrmsystemapi.model.trainee.response.TraineeRegistrationResponse;
 import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
-import com.epam.gymcrmsystemapi.model.user.ChangeUserStatusRequest;
+import com.epam.gymcrmsystemapi.model.user.request.ChangeUserStatusRequest;
 import com.epam.gymcrmsystemapi.service.trainee.TraineeOperations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,14 +18,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -37,7 +36,6 @@ import java.util.List;
         description = "Operations for creating, updating, retrieving and deleting trainee in the application")
 public class TraineeController {
 
-    private static final Logger log = LoggerFactory.getLogger(TraineeController.class);
     private final TraineeOperations traineeOperations;
 
     public TraineeController(TraineeOperations traineeOperations) {
@@ -80,7 +78,7 @@ public class TraineeController {
                             schema = @Schema(implementation = TraineeResponse.class))),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
-    public TraineeResponse getCurrentTrainee(String username) {
+    public TraineeResponse getCurrentTrainee(@AuthenticationPrincipal String username) {
         return traineeOperations.findByUsername(username)
                 .orElseThrow(() -> TraineeExceptions.traineeNotFound(username));
     }
@@ -97,7 +95,7 @@ public class TraineeController {
                             schema = @Schema(implementation = TraineeResponse.class))),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
-    public TraineeResponse mergeCurrentTrainee(String username,
+    public TraineeResponse mergeCurrentTrainee(@AuthenticationPrincipal String username,
                                                @RequestBody @Valid TraineeMergeRequest request) {
         return traineeOperations.mergeByUsername(username, request);
     }
@@ -110,7 +108,7 @@ public class TraineeController {
             @ApiResponse(responseCode = "204", description = "Trainee deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
-    public void deleteCurrentTrainee(String username) {
+    public void deleteCurrentTrainee(@AuthenticationPrincipal String username) {
         traineeOperations.deleteByUsername(username);
     }
 
@@ -143,7 +141,6 @@ public class TraineeController {
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TraineeResponse getTraineeById(@PathVariable long id) {
-        log.info("Fetching entity with id: {}", id);
         return traineeOperations.findById(id)
                 .orElseThrow(() -> TraineeExceptions.traineeNotFound(id));
     }
@@ -201,7 +198,7 @@ public class TraineeController {
     }
 
     @PatchMapping(
-            value = "/trainers/change",
+            value = "/change",
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(summary = "Change trainee's set of trainers",

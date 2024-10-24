@@ -9,6 +9,7 @@ import java.util.Objects;
 public class Specialization {
 
     @Id
+    @Column(nullable = false, unique = true)
     @Enumerated(EnumType.ORDINAL)
     private SpecializationType id;
 

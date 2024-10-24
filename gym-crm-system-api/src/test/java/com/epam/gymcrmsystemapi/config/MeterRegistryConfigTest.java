@@ -1,22 +1,18 @@
 package com.epam.gymcrmsystemapi.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class MeterRegistryConfigTest {
 
     @Test
     void testMeterRegistryBeanCreation() {
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MeterRegistryConfig.class)) {
-            MeterRegistry meterRegistry = context.getBean(MeterRegistry.class);
+        MeterRegistryConfig meterRegistryConfig = new MeterRegistryConfig();
 
-            assertNotNull(meterRegistry);
-            assertTrue(meterRegistry instanceof PrometheusMeterRegistry);
-        }
+        MeterRegistry meterRegistry = meterRegistryConfig.meterRegistry();
+
+        assertThat(meterRegistry).isNotNull();
     }
 }

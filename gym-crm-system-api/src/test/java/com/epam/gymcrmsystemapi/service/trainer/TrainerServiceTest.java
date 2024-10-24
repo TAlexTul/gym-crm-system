@@ -8,7 +8,7 @@ import com.epam.gymcrmsystemapi.model.trainer.response.TrainerRegistrationRespon
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.trainer.specialization.Specialization;
 import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
+import com.epam.gymcrmsystemapi.model.user.KnownAuthority;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.SpecializationRepository;
@@ -67,7 +67,7 @@ class TrainerServiceTest {
         Specialization specialization = trainer.getSpecialization();
         User user = trainer.getUser();
 
-        when(userOperations.save(firstName, lastName)).thenReturn(user);
+        when(userOperations.save(firstName, lastName, KnownAuthority.ROLE_TRAINER)).thenReturn(user);
         when(specializationRepository.findById(request.specializationType())).thenReturn(Optional.of(specialization));
         when(trainerRepository.save(any(Trainer.class))).thenReturn(trainer);
 
@@ -77,7 +77,7 @@ class TrainerServiceTest {
         assertEquals(trainer.getUser().getId(), response.id());
         assertEquals(trainer.getUser().getUsername(), response.userName());
         assertEquals(trainer.getUser().getPassword(), response.password());
-        verify(userOperations, only()).save(firstName, lastName);
+        verify(userOperations, only()).save(firstName, lastName, KnownAuthority.ROLE_TRAINER);
         verify(specializationRepository, only()).findById(request.specializationType());
         verify(trainerRepository, only()).save(any(Trainer.class));
     }
@@ -285,24 +285,42 @@ class TrainerServiceTest {
         Trainer trainer = getTrainer();
         var status = UserStatus.ACTIVE;
 
+        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
+
+        TrainerResponse response = trainerService.changeStatusById(1L, status);
+
+        assertNotNull(response);
+        assertEquals(trainer.getUser().getStatus(), response.status());
+        verify(trainerRepository, only()).findById(id);
+    }
+
+    @Test
+    void testChangeStatusById_whenStatusIsNotEqual() {
+        Long id = 1L;
+        Trainer trainer = getTrainer();
+        var status = UserStatus.SUSPENDED;
+
         doNothing().when(userOperations).changeStatusById(id, status);
         when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
 
         TrainerResponse response = trainerService.changeStatusById(id, status);
 
         assertNotNull(response);
+    }
 
-        assertEquals(trainer.getUser().getFirstName(), response.firstName());
-        assertEquals(trainer.getUser().getLastName(), response.lastName());
+    @Test
+    void testChangeStatusByUsername_whenStatusIsNotEqual() {
+        String username = "John.Doe";
+        Trainer trainer = getTrainer();
+        var status = UserStatus.SUSPENDED;
+
+        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
+
+        TrainerResponse response = trainerService.changeStatusByUsername(username, status);
+
+        assertNotNull(response);
         assertEquals(trainer.getUser().getStatus(), response.status());
-
-        assertEquals(trainer.getSpecialization().getId().ordinal(),
-                response.specialization().id());
-        assertEquals(trainer.getSpecialization().getSpecialization(),
-                response.specialization().specializationType());
-
-        verify(userOperations, only()).changeStatusById(id, status);
-        verify(trainerRepository, only()).findById(id);
+        verify(trainerRepository, only()).findByUsername(username);
     }
 
     @Test

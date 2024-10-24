@@ -9,6 +9,7 @@ import java.util.Objects;
 public class TrainingType {
 
     @Id
+    @Column(nullable = false, unique = true)
     @Enumerated(EnumType.ORDINAL)
     private Type id;
 

@@ -10,7 +10,7 @@ import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveRequest;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerRegistrationResponse;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.trainer.specialization.Specialization;
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
+import com.epam.gymcrmsystemapi.model.user.KnownAuthority;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.SpecializationRepository;
@@ -19,7 +19,6 @@ import com.epam.gymcrmsystemapi.repository.TrainerRepository;
 import com.epam.gymcrmsystemapi.service.user.UserOperations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,18 +33,15 @@ public class TrainerService implements TrainerOperations {
     private final SpecializationRepository specializationRepository;
     private final TrainerRepository trainerRepository;
     private final TraineeRepository traineeRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public TrainerService(UserOperations userOperations,
                           SpecializationRepository specializationRepository,
                           TrainerRepository trainerRepository,
-                          TraineeRepository traineeRepository,
-                          PasswordEncoder passwordEncoder) {
+                          TraineeRepository traineeRepository) {
         this.userOperations = userOperations;
         this.specializationRepository = specializationRepository;
         this.trainerRepository = trainerRepository;
         this.traineeRepository = traineeRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -109,22 +105,6 @@ public class TrainerService implements TrainerOperations {
     }
 
     @Override
-    public TrainerResponse changeLoginDataById(long id, OverrideLoginRequest request) {
-        Trainer trainer = getTrainer(id);
-        trainer.getUser().setUsername(request.username());
-        changePassword(trainer, request.oldPassword(), request.newPassword());
-        return TrainerResponse.fromTrainer(trainer);
-    }
-
-    @Override
-    public TrainerResponse changeLoginDataByUsername(String username, OverrideLoginRequest request) {
-        Trainer trainer = getTrainer(username);
-        trainer.getUser().setUsername(request.username());
-        changePassword(trainer, request.oldPassword(), request.newPassword());
-        return TrainerResponse.fromTrainer(trainer);
-    }
-
-    @Override
     public void deleteById(long id) {
         trainerRepository.deleteById(id);
     }
@@ -135,7 +115,7 @@ public class TrainerService implements TrainerOperations {
     }
 
     private Trainer save(TrainerSaveRequest request) {
-        User user = userOperations.save(request.firstName(), request.lastName());
+        User user = userOperations.save(request.firstName(), request.lastName(), KnownAuthority.ROLE_TRAINER);
 
         Specialization specialization = specializationRepository.findById(request.specializationType())
                 .orElseThrow(() -> SpecializationExceptions.specializationNotFound(request.specializationType()));
@@ -172,14 +152,6 @@ public class TrainerService implements TrainerOperations {
         if (status != null && trainer.getUser().getStatus() != status) {
             trainer.getUser().setStatus(status);
         }
-
         return trainer;
-    }
-
-    private void changePassword(Trainer trainer, String oldPassword, String newPassword) {
-        if (!passwordEncoder.matches(oldPassword, trainer.getUser().getPassword())) {
-            throw TrainerExceptions.wrongPassword();
-        }
-        trainer.getUser().setPassword(passwordEncoder.encode(newPassword));
     }
 }

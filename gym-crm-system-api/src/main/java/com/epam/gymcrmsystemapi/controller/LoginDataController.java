@@ -1,7 +1,7 @@
 package com.epam.gymcrmsystemapi.controller;
 
 import com.epam.gymcrmsystemapi.Routes;
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
+import com.epam.gymcrmsystemapi.model.user.request.OverrideLoginRequest;
 import com.epam.gymcrmsystemapi.service.user.UserOperations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,8 +36,8 @@ public class LoginDataController {
             @ApiResponse(responseCode = "200", description = "User login data updated successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public void changeTraineeLoginData(@PathVariable long id,
-                                       @RequestBody @Valid OverrideLoginRequest request) {
+    public void changeUserLoginData(@PathVariable long id,
+                                    @RequestBody @Valid OverrideLoginRequest request) {
         userOperations.changeLoginDataById(id, request);
     }
 
@@ -51,8 +52,8 @@ public class LoginDataController {
             @ApiResponse(responseCode = "200", description = "User login data updated successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public void changeCurrentTraineeLoginData(String username,
-                                              @RequestBody @Valid OverrideLoginRequest request) {
+    public void changeCurrentUserLoginData(@AuthenticationPrincipal String username,
+                                           @RequestBody @Valid OverrideLoginRequest request) {
         userOperations.changeLoginDataByUsername(username, request);
     }
 }

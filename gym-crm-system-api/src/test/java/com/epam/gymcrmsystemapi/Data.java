@@ -4,11 +4,13 @@ import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.trainer.specialization.Specialization;
 import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
+import com.epam.gymcrmsystemapi.model.user.KnownAuthority;
 import com.epam.gymcrmsystemapi.model.user.User;
+import com.epam.gymcrmsystemapi.model.user.UserAuthority;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 
 import java.time.OffsetDateTime;
-import java.util.Set;
+import java.util.*;
 
 public final class Data {
 
@@ -53,8 +55,8 @@ public final class Data {
                         ID_TRAINER_1,
                         SPECIALIZATION_TYPE_1,
                         getUser1(),
-                        null,
-                        null
+                        new HashSet<>(),
+                        new HashSet<>()
                 ));
     }
 
@@ -64,8 +66,8 @@ public final class Data {
                         ID_TRAINER_2,
                         SPECIALIZATION_TYPE_2,
                         getUser2(),
-                        null,
-                        null
+                        new HashSet<>(),
+                        new HashSet<>()
                 ));
     }
 
@@ -76,8 +78,8 @@ public final class Data {
                         DATE_OF_BIRTH_1,
                         ADDRESS_1,
                         getUser1(),
-                        null,
-                        null
+                        new HashSet<>(),
+                        new HashSet<>()
                 ));
     }
 
@@ -88,8 +90,8 @@ public final class Data {
                         DATE_OF_BIRTH_2,
                         ADDRESS_2,
                         getUser2(),
-                        null,
-                        null
+                        new HashSet<>(),
+                        new HashSet<>()
                 ));
     }
 
@@ -100,7 +102,8 @@ public final class Data {
                 LAST_NAME_1,
                 USERNAME_1,
                 PASSWORD_1,
-                UserStatus.ACTIVE
+                UserStatus.ACTIVE,
+                new EnumMap<>(KnownAuthority.class)
         );
     }
 
@@ -111,7 +114,8 @@ public final class Data {
                 LAST_NAME_2,
                 USERNAME_2,
                 PASSWORD_2,
-                UserStatus.ACTIVE
+                UserStatus.ACTIVE,
+                new EnumMap<>(KnownAuthority.class)
         );
     }
 }

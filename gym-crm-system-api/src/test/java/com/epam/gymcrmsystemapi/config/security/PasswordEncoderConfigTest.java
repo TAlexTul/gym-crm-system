@@ -1,5 +1,6 @@
-package com.epam.gymcrmsystemapi.config;
+package com.epam.gymcrmsystemapi.config.security;
 
+import com.epam.gymcrmsystemapi.config.security.PasswordEncoderConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;

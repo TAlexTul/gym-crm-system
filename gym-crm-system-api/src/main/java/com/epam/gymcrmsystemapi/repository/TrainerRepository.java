@@ -17,9 +17,6 @@ public interface TrainerRepository extends JpaRepository<Trainer, Long> {
     @Query("select t from Trainer t where t.user.username = :username")
     Optional<Trainer> findByUsername(String username);
 
-    @Query("select case when count(t) > 0 then true else false end from Trainer t where t.user.username = :username")
-    boolean existsByUsername(String username);
-
     @Query("delete from User u where u.username = :username")
     @Modifying
     void deleteByUsername(String username);

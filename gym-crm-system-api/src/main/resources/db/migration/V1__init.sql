@@ -7,7 +7,7 @@ create table user_statuses
 insert into user_statuses(id, description)
 values (0, 'ACTIVE');
 insert into user_statuses(id, description)
-values (1, 'SUSPEND');
+values (1, 'SUSPENDED');
 
 create table users
 (
@@ -17,6 +17,42 @@ create table users
     username   text not null unique,
     password   text not null,
     status     int  not null references user_statuses (id)
+);
+
+create table authorities
+(
+    id      int primary key,
+    "value" text not null
+);
+
+insert into authorities (id, "value")
+values (0, 'ROLE_ADMIN'),
+       (1, 'ROLE_TRAINEE'),
+       (2, 'ROLE_TRAINER');
+
+
+create table user_authorities
+(
+    user_id      bigint not null,
+    authority_id int    not null,
+    primary key (user_id, authority_id),
+    constraint user_authorities_user_fk foreign key (user_id)
+        references users (id) on delete cascade,
+    constraint user_authorities_authority_fk foreign key (authority_id)
+        references authorities (id) on delete cascade
+);
+
+create table refresh_tokens
+(
+    "value"   uuid                     not null primary key,
+    user_id   bigint                   not null,
+    issued_at timestamp with time zone not null,
+    expire_at timestamp with time zone not null,
+    next      uuid,
+    constraint refresh_tokens_user_fk foreign key (user_id)
+        references users (id) on delete cascade,
+    constraint refresh_tokens_next_fk foreign key (next)
+        references refresh_tokens ("value") on delete cascade
 );
 
 create table trainees
@@ -143,4 +179,12 @@ create table trainings_trainers
         references trainings (id) on delete cascade,
     constraint trainings_trainers_trainer_fk foreign key (trainer_id)
         references trainers (id) on delete cascade
+);
+
+create table attempts
+(
+    id            bigserial primary key,
+    username      text not null unique,
+    attempts      int  not null            default 0,
+    last_modified timestamp with time zone default now()
 );
