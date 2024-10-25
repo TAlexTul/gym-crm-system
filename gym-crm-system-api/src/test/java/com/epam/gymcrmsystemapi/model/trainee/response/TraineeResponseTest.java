@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TraineeResponseTest {
 
@@ -28,10 +27,9 @@ class TraineeResponseTest {
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
         assertEquals(trainee.getAddress(), response.address());
 
-        assertEquals(trainee.getTrainers().iterator().next().getSpecialization().getId().ordinal(),
-                response.trainers().iterator().next().specialization().id());
-        assertEquals(trainee.getTrainers().iterator().next().getSpecialization().getSpecialization(),
-                response.trainers().iterator().next().specialization().specializationType());
+        Trainer trainer = trainee.getTrainers().iterator().next();
+        assertEquals(trainer.getSpecialization().getSpecialization(),
+                response.trainers().get(0).specialization().specializationType());
     }
 
     @Test

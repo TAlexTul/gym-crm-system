@@ -1,15 +1,14 @@
 package com.epam.gymcrmsystemapi.service.user.username;
 
 import com.epam.gymcrmsystemapi.repository.UserRepository;
-import com.epam.gymcrmsystemapi.service.user.username.UsernameGeneratorImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.web.server.ResponseStatusException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class UsernameGeneratorImplTest {
@@ -44,14 +43,12 @@ public class UsernameGeneratorImplTest {
         String lastName = "Doe";
 
         when(userRepository.existsByFirstNameAndLastName(firstName, lastName)).thenReturn(true);
-        when(userRepository.selectMaxId()).thenReturn(1L);
 
-        String username = usernameGenerator.calculateUsername(firstName, lastName);
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                usernameGenerator.calculateUsername(firstName, lastName)
+        );
 
-        assertNotNull(username);
-        assertEquals("John.Doe.2", username);
-        verify(userRepository, times(1)).existsByFirstNameAndLastName(firstName, lastName);
-        verify(userRepository, times(1)).selectMaxId();
-        verifyNoMoreInteractions(userRepository);
+        assertEquals("User with first name 'John', last name 'Doe' is already taken", exception.getReason());
+        verify(userRepository, only()).existsByFirstNameAndLastName(firstName, lastName);
     }
 }

@@ -1,5 +1,6 @@
 package com.epam.gymcrmsystemapi.service.user.username;
 
+import com.epam.gymcrmsystemapi.exceptions.UserExceptions;
 import com.epam.gymcrmsystemapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,17 +15,11 @@ public class UsernameGeneratorImpl implements UsernameGenerator {
 
     @Override
     public String calculateUsername(String firstName, String lastName) {
-        boolean isExists = userRepository.existsByFirstNameAndLastName(firstName, lastName);
-        if (isExists) {
-            Long suffix = userRepository.selectMaxId();
-            return String.join(".",
-                    firstName.trim(),
-                    lastName.trim(),
-                    (++suffix).toString());
-        } else {
-            return String.join(".",
-                    firstName.trim(),
-                    lastName.trim());
-        }
+        if (userRepository.existsByFirstNameAndLastName(firstName, lastName))
+            throw UserExceptions.duplicateFirstNameAndLastName(firstName, lastName);
+
+        return String.join(".",
+                firstName.trim(),
+                lastName.trim());
     }
 }

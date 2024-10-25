@@ -1,7 +1,7 @@
 package com.epam.gymcrmsystemapi.model.trainer.response;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
-import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
+import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponseForTrainerResponse;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.trainer.specialization.response.SpecializationResponse;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
@@ -14,7 +14,7 @@ public record TrainerResponse(String firstName,
                               String lastName,
                               UserStatus status,
                               SpecializationResponse specialization,
-                              List<TraineeResponse> trainees) {
+                              List<TraineeResponseForTrainerResponse> trainees) {
 
     public static TrainerResponse fromTrainer(Trainer trainer) {
         return new TrainerResponse(
@@ -36,9 +36,9 @@ public record TrainerResponse(String firstName,
         );
     }
 
-    private static List<TraineeResponse> fromTrainees(Set<Trainee> trainees) {
+    private static List<TraineeResponseForTrainerResponse> fromTrainees(Set<Trainee> trainees) {
         return trainees.stream()
-                .map(TraineeResponse::fromTrainee)
+                .map(TraineeResponseForTrainerResponse::fromTraineeForTrainerResponse)
                 .collect(Collectors.toList());
     }
 }

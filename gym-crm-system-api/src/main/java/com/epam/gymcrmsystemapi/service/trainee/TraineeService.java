@@ -11,7 +11,6 @@ import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.training.Training;
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.TraineeRepository;
@@ -20,7 +19,6 @@ import com.epam.gymcrmsystemapi.repository.TrainingRepository;
 import com.epam.gymcrmsystemapi.service.user.UserOperations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,18 +35,15 @@ public class TraineeService implements TraineeOperations {
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
     private final TrainingRepository trainingRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public TraineeService(UserOperations userOperations,
                           TraineeRepository traineeRepository,
                           TrainerRepository trainerRepository,
-                          TrainingRepository trainingRepository,
-                          PasswordEncoder passwordEncoder) {
+                          TrainingRepository trainingRepository) {
         this.userOperations = userOperations;
         this.traineeRepository = traineeRepository;
         this.trainerRepository = trainerRepository;
         this.trainingRepository = trainingRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -99,22 +94,6 @@ public class TraineeService implements TraineeOperations {
     public TraineeResponse changeStatusByUsername(String username, UserStatus status) {
         userOperations.changeStatusByUsername(username, status);
         return TraineeResponse.fromTrainee(getTrainee(username));
-    }
-
-    @Override
-    public TraineeResponse changeLoginDataById(long id, OverrideLoginRequest request) {
-        Trainee trainee = getTrainee(id);
-        trainee.getUser().setUsername(request.username());
-        changePassword(trainee, request.oldPassword(), request.newPassword());
-        return TraineeResponse.fromTrainee(trainee);
-    }
-
-    @Override
-    public TraineeResponse changeLoginDataByUsername(String username, OverrideLoginRequest request) {
-        Trainee trainee = getTrainee(username);
-        trainee.getUser().setUsername(request.username());
-        changePassword(trainee, request.oldPassword(), request.newPassword());
-        return TraineeResponse.fromTrainee(trainee);
     }
 
     @Override
@@ -203,12 +182,5 @@ public class TraineeService implements TraineeOperations {
                 trainingRepository.delete(training);
             }
         }
-    }
-
-    private void changePassword(Trainee trainee, String oldPassword, String newPassword) {
-        if (!passwordEncoder.matches(oldPassword, trainee.getUser().getPassword())) {
-            throw TraineeExceptions.wrongPassword();
-        }
-        trainee.getUser().setPassword(passwordEncoder.encode(newPassword));
     }
 }

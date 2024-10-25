@@ -8,8 +8,9 @@ public final class UserExceptions {
     private UserExceptions() {
     }
 
-    public static ResponseStatusException duplicateUsername(String username) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, "User name '" + username + "' already taken");
+    public static ResponseStatusException duplicateFirstNameAndLastName(String firstName, String lastName) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "User with first name '" + firstName + "', last name '" + lastName + "' is already taken");
     }
 
     public static ResponseStatusException userNotFound(long id) {

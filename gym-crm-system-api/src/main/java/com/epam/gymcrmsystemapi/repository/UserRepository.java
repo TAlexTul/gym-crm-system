@@ -12,9 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "from User u where u.firstName = :firstName and u.lastName = :lastName")
     boolean existsByFirstNameAndLastName(String firstName, String lastName);
 
-    @Query("select max(t.id) from User t")
-    Long selectMaxId();
-
     Optional<User> findByUsername(String username);
 
 }

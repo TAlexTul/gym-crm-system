@@ -48,11 +48,8 @@ class TrainerServiceTest {
     private TrainerRepository trainerRepository;
     @Mock
     private TraineeRepository traineeRepository;
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     private final static String OLD_PASSWORD = "aB9dE4fGhJ";
-    private final static String NEW_PASSWORD = "cM5dU4fEhL";
     private final static int PASSWORD_STRENGTH = 10;
     private final PasswordEncoder controlEncoder = new BCryptPasswordEncoder(PASSWORD_STRENGTH, new SecureRandom());
 
@@ -331,138 +328,6 @@ class TrainerServiceTest {
                 response.specialization().specializationType());
 
         verify(trainerRepository, only()).findByUsername(username);
-        verify(trainerRepository, only()).findByUsername(username);
-    }
-
-    @Test
-    void testChangeLoginDataById() {
-        Long id = 1L;
-        OverrideLoginRequest request = new OverrideLoginRequest("John.Doe", OLD_PASSWORD, NEW_PASSWORD);
-        String encodePassword = controlEncoder.encode(request.newPassword());
-        Trainer trainer = getTrainer();
-
-        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
-        when(passwordEncoder.matches(request.oldPassword(), trainer.getUser().getPassword()))
-                .thenReturn(true);
-        when(passwordEncoder.encode(request.newPassword())).thenReturn(encodePassword);
-
-        TrainerResponse response = trainerService.changeLoginDataById(id, request);
-
-        assertNotNull(response);
-        assertTrue(controlEncoder.matches(request.newPassword(), encodePassword));
-        assertEquals(trainer.getUser().getFirstName(), response.firstName());
-        assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getStatus(), response.status());
-
-        assertEquals(trainer.getSpecialization().getId().ordinal(),
-                response.specialization().id());
-        assertEquals(trainer.getSpecialization().getSpecialization(),
-                response.specialization().specializationType());
-
-        verify(trainerRepository, only()).findById(id);
-    }
-
-    @Test
-    void testChangeLoginDataById_whenPasswordIsNotMatch() {
-        Long id = 1L;
-        OverrideLoginRequest request
-                = new OverrideLoginRequest("John.Doe", OLD_PASSWORD, NEW_PASSWORD);
-        String encodePassword = controlEncoder.encode(request.newPassword());
-        Trainer trainer = getTrainer();
-
-        when(trainerRepository.findById(id)).thenReturn(Optional.of(trainer));
-        when(passwordEncoder.matches(request.oldPassword(), trainer.getUser().getPassword()))
-                .thenReturn(false);
-        when(passwordEncoder.encode(request.newPassword())).thenReturn(encodePassword);
-
-        ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainerService.changeLoginDataById(id, request));
-
-        assertEquals("400 BAD_REQUEST \"Password is incorrect\"", exception.getMessage());
-
-        verify(trainerRepository, only()).findById(id);
-    }
-
-    @Test
-    void testChangeLoginDataById_whenTrainerIsNotFound() {
-        Long id = 1L;
-        OverrideLoginRequest request = new OverrideLoginRequest("John.Doe", OLD_PASSWORD, NEW_PASSWORD);
-
-        when(trainerRepository.findById(id)).thenReturn(Optional.empty());
-
-        ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class, () -> trainerService.changeLoginDataById(id, request));
-
-        assertEquals(
-                "404 NOT_FOUND \"Trainer with id '" + id + "' not found\"", exception.getMessage());
-
-        verify(trainerRepository, only()).findById(id);
-    }
-
-    @Test
-    void testChangeLoginDataByUsername() {
-        String username = "John.Doe";
-        OverrideLoginRequest request = new OverrideLoginRequest(username, OLD_PASSWORD, NEW_PASSWORD);
-        String encodePassword = controlEncoder.encode(request.newPassword());
-        Trainer trainer = getTrainer();
-
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
-        when(passwordEncoder.matches(request.oldPassword(), trainer.getUser().getPassword()))
-                .thenReturn(true);
-        when(passwordEncoder.encode(request.newPassword())).thenReturn(encodePassword);
-
-        TrainerResponse response = trainerService.changeLoginDataByUsername(username, request);
-
-        assertNotNull(response);
-        assertTrue(controlEncoder.matches(request.newPassword(), encodePassword));
-        assertEquals(trainer.getUser().getFirstName(), response.firstName());
-        assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getStatus(), response.status());
-
-        assertEquals(trainer.getSpecialization().getId().ordinal(),
-                response.specialization().id());
-        assertEquals(trainer.getSpecialization().getSpecialization(),
-                response.specialization().specializationType());
-
-        verify(trainerRepository, only()).findByUsername(username);
-    }
-
-    @Test
-    void testChangeLoginDataByUsername_whenPasswordIsNotMatch() {
-        String username = "John.Doe";
-        OverrideLoginRequest request = new OverrideLoginRequest(username, OLD_PASSWORD, NEW_PASSWORD);
-        String encodePassword = controlEncoder.encode(request.newPassword());
-        Trainer trainer = getTrainer();
-
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.of(trainer));
-        when(passwordEncoder.matches(request.oldPassword(), trainer.getUser().getPassword()))
-                .thenReturn(false);
-        when(passwordEncoder.encode(request.newPassword())).thenReturn(encodePassword);
-
-        ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class,
-                        () -> trainerService.changeLoginDataByUsername(username, request));
-
-        assertEquals("400 BAD_REQUEST \"Password is incorrect\"", exception.getMessage());
-
-        verify(trainerRepository, only()).findByUsername(username);
-    }
-
-    @Test
-    void testChangePasswordByUsername_whenTrainerIsNotFound() {
-        String username = "John.Doe";
-        OverrideLoginRequest request = new OverrideLoginRequest(username, OLD_PASSWORD, NEW_PASSWORD);
-
-        when(trainerRepository.findByUsername(username)).thenReturn(Optional.empty());
-
-        ResponseStatusException exception =
-                assertThrows(ResponseStatusException.class,
-                        () -> trainerService.changeLoginDataByUsername(username, request));
-
-        assertEquals(
-                "404 NOT_FOUND \"Trainer with user name '" + username + "' not found\"",
-                exception.getMessage());
-
         verify(trainerRepository, only()).findByUsername(username);
     }
 

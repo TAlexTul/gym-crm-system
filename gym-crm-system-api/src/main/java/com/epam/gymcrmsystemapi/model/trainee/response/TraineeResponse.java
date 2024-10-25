@@ -2,7 +2,7 @@ package com.epam.gymcrmsystemapi.model.trainee.response;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
-import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
+import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponseForTraineeResponse;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -18,7 +18,7 @@ public record TraineeResponse(String firstName,
                               @JsonFormat(shape = JsonFormat.Shape.STRING)
                               OffsetDateTime dateOfBirth,
                               String address,
-                              List<TrainerResponse> trainers) {
+                              List<TrainerResponseForTraineeResponse> trainers) {
 
     public static TraineeResponse fromTrainee(Trainee trainee) {
         trainee.getTrainers()
@@ -44,9 +44,9 @@ public record TraineeResponse(String firstName,
         );
     }
 
-    private static List<TrainerResponse> fromTrainers(Set<Trainer> trainers) {
+    private static List<TrainerResponseForTraineeResponse> fromTrainers(Set<Trainer> trainers) {
         return trainers.stream()
-                .map(TrainerResponse::fromTrainer)
+                .map(TrainerResponseForTraineeResponse::fromTrainerForTraineeResponse)
                 .collect(Collectors.toList());
     }
 }

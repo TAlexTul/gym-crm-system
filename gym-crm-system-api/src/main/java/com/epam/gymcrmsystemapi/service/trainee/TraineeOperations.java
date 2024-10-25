@@ -6,7 +6,6 @@ import com.epam.gymcrmsystemapi.model.trainee.request.TraineeSaveRequest;
 import com.epam.gymcrmsystemapi.model.trainee.response.TraineeRegistrationResponse;
 import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,10 +30,6 @@ public interface TraineeOperations {
     TraineeResponse changeStatusById(long id, UserStatus status);
 
     TraineeResponse changeStatusByUsername(String username, UserStatus status);
-
-    TraineeResponse changeLoginDataById(long id, OverrideLoginRequest request);
-
-    TraineeResponse changeLoginDataByUsername(String username, OverrideLoginRequest request);
 
     List<TrainerResponse> changeTraineeSetOfTrainers(TraineeChangeTrainersSetRequest request);
 
