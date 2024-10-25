@@ -14,10 +14,7 @@ class TraineeExceptionsTest {
 
         ResponseStatusException rse = TraineeExceptions.traineeNotFound(id);
 
-        String message = rse.getMessage();
-        String[] parts = message.split(" ", 3);
-        int statusCode = Integer.parseInt(parts[0]);
-        HttpStatus status = HttpStatus.valueOf(statusCode);
+        HttpStatus status = HttpStatus.valueOf(rse.getStatusCode().value());
 
         assertEquals(HttpStatus.NOT_FOUND, status);
         assertEquals("Trainee with id '123' not found", rse.getReason());
@@ -30,10 +27,7 @@ class TraineeExceptionsTest {
 
         ResponseStatusException rse = TraineeExceptions.traineeNotFound(firstName, lastName);
 
-        String message = rse.getMessage();
-        String[] parts = message.split(" ", 3);
-        int statusCode = Integer.parseInt(parts[0]);
-        HttpStatus status = HttpStatus.valueOf(statusCode);
+        HttpStatus status = HttpStatus.valueOf(rse.getStatusCode().value());
 
         assertEquals(HttpStatus.NOT_FOUND, status);
         assertEquals("Trainee with first name 'John', last name 'Doe' not found", rse.getReason());
@@ -45,12 +39,43 @@ class TraineeExceptionsTest {
 
         ResponseStatusException rse = TraineeExceptions.traineeNotFound(username);
 
-        String message = rse.getMessage();
-        String[] parts = message.split(" ", 3);
-        int statusCode = Integer.parseInt(parts[0]);
-        HttpStatus status = HttpStatus.valueOf(statusCode);
+        HttpStatus status = HttpStatus.valueOf(rse.getStatusCode().value());
 
         assertEquals(HttpStatus.NOT_FOUND, status);
         assertEquals("Trainee with user name 'John.Doe' not found", rse.getReason());
+    }
+
+    @Test
+    void testUsernameAlreadyRegistered() {
+        String username = "John.Doe";
+
+        ResponseStatusException rse = TraineeExceptions.usernameAlreadyRegistered(username);
+
+        HttpStatus status = HttpStatus.valueOf(rse.getStatusCode().value());
+
+        assertEquals(HttpStatus.BAD_REQUEST, status);
+        assertEquals("User name 'John.Doe' already registered as trainer", rse.getReason());
+    }
+
+    @Test
+    void testDuplicateUsername() {
+        String username = "John.Doe";
+
+        ResponseStatusException rse = TraineeExceptions.duplicateUsername(username);
+
+        HttpStatus status = HttpStatus.valueOf(rse.getStatusCode().value());
+
+        assertEquals(HttpStatus.BAD_REQUEST, status);
+        assertEquals("User name 'John.Doe' already taken", rse.getReason());
+    }
+
+    @Test
+    void testWrongPassword() {
+        ResponseStatusException rse = TraineeExceptions.wrongPassword();
+
+        HttpStatus status = HttpStatus.valueOf(rse.getStatusCode().value());
+
+        assertEquals(HttpStatus.BAD_REQUEST, status);
+        assertEquals("Password is incorrect", rse.getReason());
     }
 }

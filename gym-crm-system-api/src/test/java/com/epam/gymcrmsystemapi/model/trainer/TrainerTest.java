@@ -11,7 +11,7 @@ class TrainerTest {
     @Test
     void testConstructorWithoutArgsWithSettersAndGetters() {
         assertEquals(ID_TRAINER_1, getTrainer1().getId());
-        assertEquals(SPECIALIZATION_1, getTrainer1().getSpecialization());
+        assertEquals(SPECIALIZATION_TYPE_1, getTrainer1().getSpecialization());
         assertEquals(getUser1(), getTrainer1().getUser());
     }
 
@@ -38,7 +38,7 @@ class TrainerTest {
     private Trainer getTrainer1() {
         return new Trainer(
                 ID_TRAINER_1,
-                SPECIALIZATION_1,
+                SPECIALIZATION_TYPE_1,
                 getUser1(),
                 null,
                 null
@@ -48,7 +48,7 @@ class TrainerTest {
     private Trainer getTrainer2() {
         return new Trainer(
                 ID_TRAINER_2,
-                SPECIALIZATION_2,
+                SPECIALIZATION_TYPE_2,
                 getUser2(),
                 null,
                 null

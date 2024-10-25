@@ -1,5 +1,7 @@
 package com.epam.gymcrmsystemapi.model.training;
 
+import com.epam.gymcrmsystemapi.model.training.type.TrainingType;
+import com.epam.gymcrmsystemapi.model.training.type.Type;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -16,7 +18,8 @@ class TrainingTest {
         assertEquals(getTrainee1(), getTraining1().getTrainees());
         assertEquals(getTrainer1(), getTraining1().getTrainers());
         assertEquals(TRAINING_NAME_1, getTraining1().getTrainingName());
-        assertEquals(List.of(new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING)), getTraining1().getTrainingTypes());
+        assertEquals(List.of(new TrainingType(Type.STRENGTH_TRAINING,
+                Type.STRENGTH_TRAINING)), getTraining1().getTrainingTypes());
         assertEquals(TRAINING_DATE_1, getTraining1().getTrainingDate());
         assertEquals(TRAINING_DURATION_1, getTraining1().getTrainingDuration());
     }

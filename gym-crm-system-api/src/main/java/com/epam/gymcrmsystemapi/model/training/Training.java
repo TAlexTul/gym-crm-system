@@ -2,13 +2,11 @@ package com.epam.gymcrmsystemapi.model.training;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
+import com.epam.gymcrmsystemapi.model.training.type.TrainingType;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "trainings")
@@ -30,14 +28,18 @@ public class Training {
             joinColumns = @JoinColumn(name = "training_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "trainer_id", referencedColumnName = "id")
     )
-    private Set<Trainer> trainers;
+    private Set<Trainer> trainers = new HashSet<>();
 
     @Column(name = "training_name", nullable = false)
     private String trainingName;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "training_types_id")
-    private List<TrainingType> trainingTypes;
+    @OneToMany(cascade = CascadeType.DETACH)
+    @JoinTable(
+            name = "trainings_training_types",
+            joinColumns = @JoinColumn(name = "training_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "training_type_id", referencedColumnName = "id")
+    )
+    private List<TrainingType> trainingTypes = new ArrayList<>();
 
     @Column(name = "training_date", nullable = false)
     private OffsetDateTime trainingDate;

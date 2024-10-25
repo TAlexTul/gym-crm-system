@@ -1,33 +1,34 @@
 package com.epam.gymcrmsystemapi.model.trainer;
 
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
+import com.epam.gymcrmsystemapi.model.trainer.specialization.Specialization;
 import com.epam.gymcrmsystemapi.model.training.Training;
 import com.epam.gymcrmsystemapi.model.user.User;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "trainers")
-public class Trainer extends User {
+public class Trainer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private Specialization specialization;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private User user;
 
     @ManyToMany(mappedBy = "trainers")
-    private Set<Training> trainings;
+    private Set<Training> trainings = new HashSet<>();
 
     @ManyToMany(mappedBy = "trainers")
-    private Set<Trainee> trainees;
+    private Set<Trainee> trainees = new HashSet<>();
 
     public Trainer() {
     }
@@ -41,12 +42,10 @@ public class Trainer extends User {
         this.trainees = trainees;
     }
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -87,14 +86,12 @@ public class Trainer extends User {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         Trainer trainer = (Trainer) o;
-        return Objects.equals(id, trainer.id)
-                && Objects.equals(specialization, trainer.specialization);
+        return Objects.equals(id, trainer.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, specialization);
+        return Objects.hash(id);
     }
 }

@@ -6,6 +6,7 @@ import com.epam.gymcrmsystemapi.model.user.User;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -27,14 +28,14 @@ public class Trainee {
     private User user;
 
     @ManyToMany(mappedBy = "trainees")
-    private Set<Training> trainings;
+    private Set<Training> trainings = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
             joinColumns = @JoinColumn(name = "trainee_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "trainer_id", referencedColumnName = "id")
     )
-    private Set<Trainer> trainers;
+    private Set<Trainer> trainers = new HashSet<>();
 
     public Trainee() {
     }
