@@ -80,7 +80,7 @@ public class TraineeController {
                             schema = @Schema(implementation = TraineeResponse.class))),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
-    public TraineeResponse getCurrentTrainee(/*@AuthenticationPrincipal*/ String username) {
+    public TraineeResponse getCurrentTrainee(String username) {
         return traineeOperations.findByUsername(username)
                 .orElseThrow(() -> TraineeExceptions.traineeNotFound(username));
     }
@@ -97,8 +97,8 @@ public class TraineeController {
                             schema = @Schema(implementation = TraineeResponse.class))),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
-    public TraineeResponse mergeCurrentTrainee(/*@AuthenticationPrincipal*/ String username,
-                                                                            @RequestBody @Valid TraineeMergeRequest request) {
+    public TraineeResponse mergeCurrentTrainee(String username,
+                                               @RequestBody @Valid TraineeMergeRequest request) {
         return traineeOperations.mergeByUsername(username, request);
     }
 
@@ -110,7 +110,7 @@ public class TraineeController {
             @ApiResponse(responseCode = "204", description = "Trainee deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
-    public void deleteCurrentTrainee(/*@AuthenticationPrincipal*/ String username) {
+    public void deleteCurrentTrainee(String username) {
         traineeOperations.deleteByUsername(username);
     }
 

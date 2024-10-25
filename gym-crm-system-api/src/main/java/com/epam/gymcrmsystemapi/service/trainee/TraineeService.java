@@ -100,14 +100,14 @@ public class TraineeService implements TraineeOperations {
     public List<TrainerResponse> changeTraineeSetOfTrainers(TraineeChangeTrainersSetRequest request) {
         Trainee trainee = getTrainee(request.traineeUsername());
         Set<Trainer> trainers = trainee.getTrainers();
-        trainee.getTrainers().clear();
+        trainers.clear();
         List<String> trainersUsernameList = request.trainerUsernames();
         for (String username : trainersUsernameList) {
             Trainer trainer = trainerRepository.findByUsername(username)
                     .orElseThrow(() -> TrainerExceptions.trainerNotFound(username));
             trainers.add(trainer);
         }
-        trainee.setTrainers(trainers);
+
         return trainers.stream()
                 .map(TrainerResponse::fromTrainer)
                 .toList();

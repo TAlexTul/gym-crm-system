@@ -36,7 +36,7 @@ public class LoginDataController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public void changeTraineeLoginData(@PathVariable long id,
-                                                  @RequestBody @Valid OverrideLoginRequest request) {
+                                       @RequestBody @Valid OverrideLoginRequest request) {
         userOperations.changeLoginDataById(id, request);
     }
 
@@ -51,8 +51,8 @@ public class LoginDataController {
             @ApiResponse(responseCode = "200", description = "User login data updated successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public void changeCurrentTraineeLoginData(/*@AuthenticationPrincipal*/ String username,
-                                                         @RequestBody @Valid OverrideLoginRequest request) {
+    public void changeCurrentTraineeLoginData(String username,
+                                              @RequestBody @Valid OverrideLoginRequest request) {
         userOperations.changeLoginDataByUsername(username, request);
     }
 }

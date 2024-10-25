@@ -97,7 +97,7 @@ public class TrainerController {
             @ApiResponse(responseCode = "200", description = "Trainer retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
-    public TrainerResponse getCurrentTrainer(/*@AuthenticationPrincipal*/ String username) {
+    public TrainerResponse getCurrentTrainer(String username) {
         return trainerOperations.findByUsername(username)
                 .orElseThrow(() -> TrainerExceptions.trainerNotFound(username));
     }
@@ -112,8 +112,7 @@ public class TrainerController {
             @ApiResponse(responseCode = "200", description = "Trainer updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
-    public TrainerResponse mergeCurrentTrainer(
-            /*@AuthenticationPrincipal*/ String username, @RequestBody @Valid TrainerMergeRequest request) {
+    public TrainerResponse mergeCurrentTrainer(String username, @RequestBody @Valid TrainerMergeRequest request) {
         return trainerOperations.mergeByUsername(username, request);
     }
 
@@ -124,7 +123,7 @@ public class TrainerController {
             @ApiResponse(responseCode = "204", description = "Trainer deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
-    public void deleteCurrentTrainer(/*@AuthenticationPrincipal*/ String username) {
+    public void deleteCurrentTrainer(String username) {
         trainerOperations.deleteByUsername(username);
     }
 
