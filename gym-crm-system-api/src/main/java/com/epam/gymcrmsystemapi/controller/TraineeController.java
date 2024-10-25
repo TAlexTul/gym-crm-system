@@ -9,7 +9,6 @@ import com.epam.gymcrmsystemapi.model.trainee.response.TraineeRegistrationRespon
 import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.user.ChangeUserStatusRequest;
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
 import com.epam.gymcrmsystemapi.service.trainee.TraineeOperations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,7 +33,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping(Routes.TRAINEES)
-@Tag(name = "Trainee", description = "Operations for creating, updating, retrieving and deleting trainee in the application")
+@Tag(name = "Trainee",
+        description = "Operations for creating, updating, retrieving and deleting trainee in the application")
 public class TraineeController {
 
     private static final Logger log = LoggerFactory.getLogger(TraineeController.class);
@@ -48,7 +48,8 @@ public class TraineeController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Register a new trainee", description = "Register a new trainee and return the registration response")
+    @Operation(summary = "Register a new trainee",
+            description = "Register a new trainee and return the registration response")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Trainee registered successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -68,10 +69,11 @@ public class TraineeController {
     //region authenticated trainee API
 
     @GetMapping(
-            value = "/me",
+            value = "/account",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "Get current trainee information", description = "Retrieve the current authenticated trainee's information")
+    @Operation(summary = "Get current trainee information",
+            description = "Retrieve the current authenticated trainee's information")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainee information retrieved successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -79,14 +81,16 @@ public class TraineeController {
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TraineeResponse getCurrentTrainee(/*@AuthenticationPrincipal*/ String username) {
-        return traineeOperations.findByUsername(username).orElseThrow(() -> TraineeExceptions.traineeNotFound(username));
+        return traineeOperations.findByUsername(username)
+                .orElseThrow(() -> TraineeExceptions.traineeNotFound(username));
     }
 
     @PatchMapping(
-            value = "/me",
+            value = "/account",
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "Update current trainee information", description = "Update the current authenticated trainee's information")
+    @Operation(summary = "Update current trainee information",
+            description = "Update the current authenticated trainee's information")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainee information updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -98,26 +102,10 @@ public class TraineeController {
         return traineeOperations.mergeByUsername(username, request);
     }
 
-    @PatchMapping(
-            value = "/me/login-data",
-            produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Change current trainee login data", description = "Update the login data of the current authenticated trainee")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Trainee login data updated successfully",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = TraineeResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Trainee not found")
-    })
-    public TraineeResponse changeCurrentTraineeLoginData(/*@AuthenticationPrincipal*/ String username,
-                                                                                      @RequestBody @Valid OverrideLoginRequest request) {
-        return traineeOperations.changeLoginDataByUsername(username, request);
-    }
-
-    @DeleteMapping("/me")
+    @DeleteMapping("/account")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Delete current trainee", description = "Delete the current authenticated trainee's account")
+    @Operation(summary = "Delete current trainee",
+            description = "Delete the current authenticated trainee's account")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Trainee deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
@@ -156,7 +144,8 @@ public class TraineeController {
     })
     public TraineeResponse getTraineeById(@PathVariable long id) {
         log.info("Fetching entity with id: {}", id);
-        return traineeOperations.findById(id).orElseThrow(() -> TraineeExceptions.traineeNotFound(id));
+        return traineeOperations.findById(id)
+                .orElseThrow(() -> TraineeExceptions.traineeNotFound(id));
     }
 
     @PatchMapping(
@@ -180,7 +169,8 @@ public class TraineeController {
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Change trainee status by ID", description = "Change the status of a trainee by their ID")
+    @Operation(summary = "Change trainee status by ID",
+            description = "Change the status of a trainee by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainee status updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -197,7 +187,8 @@ public class TraineeController {
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Change trainee status by username", description = "Change the status of a trainee by their username")
+    @Operation(summary = "Change trainee status by username",
+            description = "Change the status of a trainee by their username")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainee status updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -210,27 +201,11 @@ public class TraineeController {
     }
 
     @PatchMapping(
-            value = "/{id}/login-data",
-            produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Change trainee login data by ID", description = "Update the login data of a trainee by their ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Trainee login data updated successfully",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = TraineeResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Trainee not found")
-    })
-    public TraineeResponse changeTraineeLoginData(@PathVariable long id,
-                                                  @RequestBody @Valid OverrideLoginRequest request) {
-        return traineeOperations.changeLoginDataById(id, request);
-    }
-
-    @PatchMapping(
             value = "/trainers/change",
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "Change trainee's set of trainers", description = "Update the set of trainers for a trainee")
+    @Operation(summary = "Change trainee's set of trainers",
+            description = "Update the set of trainers for a trainee")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainee's set of trainers updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,

@@ -37,12 +37,14 @@ public class TrainingController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Register a new training", description = "Create a new training and return the training response")
+    @Operation(summary = "Register a new training",
+            description = "Create a new training and return the training response")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Training registered successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
-    public ResponseEntity<TrainingResponse> register(@RequestBody @Valid TrainingSaveRequest request, UriComponentsBuilder ucb) {
+    public ResponseEntity<TrainingResponse> register(
+            @RequestBody @Valid TrainingSaveRequest request, UriComponentsBuilder ucb) {
         TrainingResponse response = trainingOperations.create(request);
         return ResponseEntity
                 .created(ucb.path(Routes.TRAININGS + "/{id}").build(response.id()))
@@ -64,7 +66,8 @@ public class TrainingController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PageableAsQueryParam
-    @Operation(summary = "Filter trainings", description = "Retrieve a paginated list of trainings based on filter criteria")
+    @Operation(summary = "Filter trainings",
+            description = "Retrieve a paginated list of trainings based on filter criteria")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Filtered list of trainings retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "No trainings found matching the criteria")

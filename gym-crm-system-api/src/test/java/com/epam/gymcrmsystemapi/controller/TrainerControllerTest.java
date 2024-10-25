@@ -76,7 +76,7 @@ public class TrainerControllerTest {
     void testGetById() throws Exception {
         var trainerId = 1L;
         var response = new TrainerResponse(
-                1L, "Jane", "Jenkins", "Jane.Jenkins", UserStatus.ACTIVE, trainerId,
+                "Jane", "Jenkins", UserStatus.ACTIVE,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
@@ -85,12 +85,9 @@ public class TrainerControllerTest {
 
         var expectedJson = """
                 {
-                  "userId": 1,
                   "firstName": "Jane",
                   "lastName": "Jenkins",
-                  "username": "Jane.Jenkins",
                   "status": "ACTIVE",
-                  "trainerId": 1,
                   "specialization": {
                     "id": 0,
                     "specializationType": "PERSONAL_TRAINER"
@@ -110,10 +107,11 @@ public class TrainerControllerTest {
     @Test
     void testMergeById() throws Exception {
         var trainerId = 1L;
-        var request = new TrainerMergeRequest("Jane.Jenkins", "Sara", "Lesly", UserStatus.ACTIVE,
+        var request = new TrainerMergeRequest("Jane.Jenkins", "Sara", "Lesly",
+                UserStatus.ACTIVE,
                 new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER));
         var response = new TrainerResponse(
-                1L, "Sara", "Lesly", "Sara.Lesly", UserStatus.ACTIVE, trainerId,
+                "Sara", "Lesly", UserStatus.ACTIVE,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
@@ -122,12 +120,9 @@ public class TrainerControllerTest {
 
         var expectedJson = """
                 {
-                  "userId": 1,
                   "firstName": "Sara",
                   "lastName": "Lesly",
-                  "username": "Sara.Lesly",
                   "status": "ACTIVE",
-                  "trainerId": 1,
                   "specialization": {
                     "id": 0,
                     "specializationType": "PERSONAL_TRAINER"
@@ -161,8 +156,7 @@ public class TrainerControllerTest {
     void testChangeTraineeStatusById() throws Exception {
         var trainerId = 1L;
         var status = UserStatus.ACTIVE;
-        var response = new TrainerResponse(
-                1L, "Sara", "Lesly", "Sara.Lesly", status, trainerId,
+        var response = new TrainerResponse("Sara", "Lesly", status,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
@@ -171,12 +165,9 @@ public class TrainerControllerTest {
 
         var expectedJson = """
                 {
-                  "userId": 1,
                   "firstName": "Sara",
                   "lastName": "Lesly",
-                  "username": "Sara.Lesly",
                   "status": "ACTIVE",
-                  "trainerId": 1,
                   "specialization": {
                     "id": 0,
                     "specializationType": "PERSONAL_TRAINER"
@@ -202,8 +193,7 @@ public class TrainerControllerTest {
     void testChangeTraineeStatusByUsername() throws Exception {
         var username = "Sara.Lesly";
         var status = UserStatus.ACTIVE;
-        var response = new TrainerResponse(
-                1L, "Sara", "Lesly", username, status, 1L,
+        var response = new TrainerResponse("Sara", "Lesly", status,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
@@ -212,12 +202,9 @@ public class TrainerControllerTest {
 
         var expectedJson = """
                 {
-                  "userId": 1,
                   "firstName": "Sara",
                   "lastName": "Lesly",
-                  "username": "Sara.Lesly",
                   "status": "ACTIVE",
-                  "trainerId": 1,
                   "specialization": {
                     "id": 0,
                     "specializationType": "PERSONAL_TRAINER"

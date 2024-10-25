@@ -98,20 +98,14 @@ public class TrainerService implements TrainerOperations {
 
     @Override
     public TrainerResponse changeStatusById(long id, UserStatus status) {
-        Trainer trainer = getTrainer(id);
-        if (trainer.getUser().getStatus() != status) {
-            trainer.getUser().setStatus(status);
-        }
-        return TrainerResponse.fromTrainer(trainer);
+        userOperations.changeStatusById(id, status);
+        return TrainerResponse.fromTrainer(getTrainer(id));
     }
 
     @Override
     public TrainerResponse changeStatusByUsername(String username, UserStatus status) {
-        Trainer trainer = getTrainer(username);
-        if (trainer.getUser().getStatus() != status) {
-            trainer.getUser().setStatus(status);
-        }
-        return TrainerResponse.fromTrainer(trainer);
+        userOperations.changeStatusByUsername(username, status);
+        return TrainerResponse.fromTrainer(getTrainer(username));
     }
 
     @Override

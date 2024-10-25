@@ -1,11 +1,11 @@
 package com.epam.gymcrmsystemapi.service.user;
 
+import com.epam.gymcrmsystemapi.exceptions.UserExceptions;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.UserRepository;
 import com.epam.gymcrmsystemapi.service.user.password.PasswordGenerator;
 import com.epam.gymcrmsystemapi.service.user.username.UsernameGenerator;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ public class UserService implements UserOperations {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
-    public UserService(@Qualifier("usernameGeneratorImpl") UsernameGenerator usernameGenerator,
+    public UserService(UsernameGenerator usernameGenerator,
                        PasswordGenerator passwordGenerator,
                        PasswordEncoder passwordEncoder,
                        UserRepository userRepository) {
@@ -48,5 +48,23 @@ public class UserService implements UserOperations {
                 password,
                 user.getStatus()
         );
+    }
+
+    @Override
+    public void changeStatusById(Long id, UserStatus status) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> UserExceptions.userNotFound(id));
+        if (user.getStatus() != status) {
+            user.setStatus(status);
+        }
+    }
+
+    @Override
+    public void changeStatusByUsername(String username, UserStatus status) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> UserExceptions.userNotFound(username));
+        if (user.getStatus() != status) {
+            user.setStatus(status);
+        }
     }
 }

@@ -15,7 +15,6 @@ import com.epam.gymcrmsystemapi.repository.TraineeRepository;
 import com.epam.gymcrmsystemapi.repository.TrainerRepository;
 import com.epam.gymcrmsystemapi.repository.TrainingRepository;
 import com.epam.gymcrmsystemapi.repository.TrainingTypeRepository;
-import com.epam.gymcrmsystemapi.service.training.TrainingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -70,15 +69,10 @@ class TrainingServiceTest {
         assertNotNull(response);
         assertEquals(training.getId(), response.id());
 
-        assertEquals(training.getTrainees().iterator().next().getId(),
-                response.trainees().iterator().next().traineeId());
         assertEquals(training.getTrainees().iterator().next().getAddress(),
                 response.trainees().iterator().next().address());
         assertEquals(training.getTrainees().iterator().next().getDateOfBirth(),
                 response.trainees().iterator().next().dateOfBirth());
-
-        assertEquals(training.getTrainers().iterator().next().getId(),
-                response.trainers().iterator().next().trainerId());
 
         assertEquals(training.getTrainers().iterator().next().getSpecialization().getId().ordinal(),
                 response.trainers().iterator().next().specialization().id());
@@ -129,15 +123,10 @@ class TrainingServiceTest {
         assertTrue(response.isPresent());
         assertEquals(training.getId(), response.get().id());
 
-        assertEquals(training.getTrainees().iterator().next().getId(),
-                response.get().trainees().iterator().next().traineeId());
         assertEquals(training.getTrainees().iterator().next().getAddress(),
                 response.get().trainees().iterator().next().address());
         assertEquals(training.getTrainees().iterator().next().getDateOfBirth(),
                 response.get().trainees().iterator().next().dateOfBirth());
-
-        assertEquals(training.getTrainers().iterator().next().getId(),
-                response.get().trainers().iterator().next().trainerId());
 
         assertEquals(training.getTrainers().iterator().next().getSpecialization().getId().ordinal(),
                 response.get().trainers().iterator().next().specialization().id());

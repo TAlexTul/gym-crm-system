@@ -121,12 +121,9 @@ public class TrainingControllerTest {
                   "id": 1,
                   "trainees": [
                     {
-                      "userId": 1,
                       "firstName": "John",
                       "lastName": "Doe",
-                      "username": "John.Doe",
                       "status": "ACTIVE",
-                      "traineeId": 1,
                       "dateOfBirth": "2007-12-03T09:15:30Z",
                       "address": "123 Main St",
                       "trainers": []
@@ -134,12 +131,9 @@ public class TrainingControllerTest {
                   ],
                   "trainers": [
                     {
-                      "userId": 2,
                       "firstName": "Jane",
                       "lastName": "Jenkins",
-                      "username": "Jane.Jenkins",
                       "status": "ACTIVE",
-                      "trainerId": 1,
                       "specialization": {
                         "id": 0,
                         "specializationType": "PERSONAL_TRAINER"

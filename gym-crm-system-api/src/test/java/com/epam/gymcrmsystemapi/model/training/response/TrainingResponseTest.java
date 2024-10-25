@@ -36,15 +36,10 @@ class TrainingResponseTest {
         assertEquals(training.getTrainingDate(), response.trainingDate());
         assertEquals(training.getTrainingDuration(), response.trainingDuration());
 
-        assertEquals(training.getTrainees().iterator().next().getId(),
-                response.trainees().iterator().next().traineeId());
         assertEquals(training.getTrainees().iterator().next().getAddress(),
                 response.trainees().iterator().next().address());
         assertEquals(training.getTrainees().iterator().next().getDateOfBirth(),
                 response.trainees().iterator().next().dateOfBirth());
-
-        assertEquals(training.getTrainers().iterator().next().getId(),
-                response.trainers().iterator().next().trainerId());
 
         assertEquals(training.getTrainers().iterator().next().getSpecialization().getId().ordinal(),
                 response.trainers().iterator().next().specialization().id());

@@ -1,7 +1,5 @@
 package com.epam.gymcrmsystemapi.model.user.request;
 
-import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveRequest;
-import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
 import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -29,7 +27,8 @@ class OverrideLoginRequestTest {
 
     @Test
     void whenUsernameIsBlank_thenViolationOccurs() {
-        var request = new OverrideLoginRequest("",  "validPassword1234", "validPassword123");
+        var request = new OverrideLoginRequest(
+                "",  "validPassword1234", "validPassword123");
 
         Set<ConstraintViolation<OverrideLoginRequest>> violations = validator.validate(request);
 
@@ -49,7 +48,8 @@ class OverrideLoginRequestTest {
 
     @Test
     void testValidPassword() {
-        var request = new OverrideLoginRequest(username,  "validPassword1234", "validPassword123");
+        var request = new OverrideLoginRequest(
+                username,  "validPassword1234", "validPassword123");
 
         Set<ConstraintViolation<OverrideLoginRequest>> violations = validator.validate(request);
 

@@ -9,7 +9,8 @@ public final class TraineeExceptions {
     }
 
     public static ResponseStatusException traineeNotFound(long id) {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Trainee with id '" + id + "' not found");
+        return new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Trainee with id '" + id + "' not found");
     }
 
     public static ResponseStatusException traineeNotFound(String firstName, String lastName) {
@@ -23,14 +24,17 @@ public final class TraineeExceptions {
     }
 
     public static ResponseStatusException usernameAlreadyRegistered(String username) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, "User name '" + username + "' already registered as trainer");
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "User name '" + username + "' already registered as trainer");
     }
 
     public static ResponseStatusException duplicateUsername(String username) {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, "User name '" + username + "' already taken");
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "User name '" + username + "' already taken");
     }
 
     public static ResponseStatusException wrongPassword() {
-        return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is incorrect");
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Password is incorrect");
     }
 }

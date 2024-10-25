@@ -1,6 +1,5 @@
 package com.epam.gymcrmsystemapi.exceptions.handler;
 
-import com.epam.gymcrmsystemapi.exceptions.handler.ErrorResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;

@@ -28,12 +28,9 @@ class TrainerResponseTest {
 
         var response = TrainerResponse.fromTrainer(trainer);
 
-        assertEquals(trainer.getUser().getId(), response.userId());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
-        assertEquals(trainer.getUser().getUsername(), response.username());
         assertEquals(trainer.getUser().getStatus(), response.status());
-        assertEquals(trainer.getId(), response.trainerId());
 
         assertEquals(trainer.getSpecialization().getId().ordinal(), response.specialization().id());
         assertEquals(trainer.getSpecialization().getSpecialization(), response.specialization().specializationType());

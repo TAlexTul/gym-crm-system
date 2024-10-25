@@ -12,12 +12,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public record TraineeResponse(Long userId,
-                              String firstName,
+public record TraineeResponse(String firstName,
                               String lastName,
-                              String username,
                               UserStatus status,
-                              Long traineeId,
                               @JsonFormat(shape = JsonFormat.Shape.STRING)
                               OffsetDateTime dateOfBirth,
                               String address,
@@ -27,12 +24,9 @@ public record TraineeResponse(Long userId,
         trainee.getTrainers()
                 .forEach(t -> t.setTrainees(new HashSet<>()));
         return new TraineeResponse(
-                trainee.getUser().getId(),
                 trainee.getUser().getFirstName(),
                 trainee.getUser().getLastName(),
-                trainee.getUser().getUsername(),
                 trainee.getUser().getStatus(),
-                trainee.getId(),
                 trainee.getDateOfBirth(),
                 trainee.getAddress(),
                 fromTrainers(trainee.getTrainers())
@@ -41,12 +35,9 @@ public record TraineeResponse(Long userId,
 
     public static TraineeResponse fromTraineeWithBasicAttribute(Trainee trainee) {
         return new TraineeResponse(
-                trainee.getUser().getId(),
                 trainee.getUser().getFirstName(),
                 trainee.getUser().getLastName(),
-                trainee.getUser().getUsername(),
                 trainee.getUser().getStatus(),
-                trainee.getId(),
                 trainee.getDateOfBirth(),
                 trainee.getAddress(),
                 null

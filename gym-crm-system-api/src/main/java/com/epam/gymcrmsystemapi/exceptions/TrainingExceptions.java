@@ -9,6 +9,7 @@ public final class TrainingExceptions {
     }
 
     public static ResponseStatusException trainingNotFound(long id) {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Training with id '" + id + "' not found");
+        return new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Training with id '" + id + "' not found");
     }
 }

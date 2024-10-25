@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +63,32 @@ public class UserServiceTest {
         verify(passwordGenerator, only()).generateRandomPassword();
         verify(passwordEncoder, only()).encode(password);
         verify(userRepository, only()).save(any(User.class));
+    }
+
+    @Test
+    void testChangeStatusById() {
+        Long id = 1L;
+        User user = getUser();
+        UserStatus status = UserStatus.ACTIVE;
+
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+        userService.changeStatusById(id, status);
+
+        verify(userRepository, only()).findById(id);
+    }
+
+    @Test
+    void testChangeStatusByUsername() {
+        String username = "John.Doe";
+        User user = getUser();
+        UserStatus status = UserStatus.ACTIVE;
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        userService.changeStatusByUsername(username, status);
+
+        verify(userRepository, only()).findByUsername(username);
     }
 
     private User getUser() {

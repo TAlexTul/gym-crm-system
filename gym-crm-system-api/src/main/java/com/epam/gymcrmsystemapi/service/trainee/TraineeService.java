@@ -91,20 +91,14 @@ public class TraineeService implements TraineeOperations {
 
     @Override
     public TraineeResponse changeStatusById(long id, UserStatus status) {
-        Trainee trainee = getTrainee(id);
-        if (trainee.getUser().getStatus() != status) {
-            trainee.getUser().setStatus(status);
-        }
-        return TraineeResponse.fromTrainee(trainee);
+        userOperations.changeStatusById(id, status);
+        return TraineeResponse.fromTrainee(getTrainee(id));
     }
 
     @Override
     public TraineeResponse changeStatusByUsername(String username, UserStatus status) {
-        Trainee trainee = getTrainee(username);
-        if (trainee.getUser().getStatus() != status) {
-            trainee.getUser().setStatus(status);
-        }
-        return TraineeResponse.fromTrainee(trainee);
+        userOperations.changeStatusByUsername(username, status);
+        return TraineeResponse.fromTrainee(getTrainee(username));
     }
 
     @Override
@@ -127,6 +121,7 @@ public class TraineeService implements TraineeOperations {
     public List<TrainerResponse> changeTraineeSetOfTrainers(TraineeChangeTrainersSetRequest request) {
         Trainee trainee = getTrainee(request.traineeUsername());
         Set<Trainer> trainers = trainee.getTrainers();
+        trainee.getTrainers().clear();
         List<String> trainersUsernameList = request.trainerUsernames();
         for (String username : trainersUsernameList) {
             Trainer trainer = trainerRepository.findByUsername(username)

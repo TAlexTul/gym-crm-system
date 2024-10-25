@@ -76,19 +76,16 @@ public class TraineeControllerTest {
     void testGetById() throws Exception {
         var traineeId = 1L;
         var response = new TraineeResponse(
-                1L, "John", "Doe", "John.Doe", UserStatus.ACTIVE, traineeId,
+                "John", "Doe", UserStatus.ACTIVE,
                 OffsetDateTime.parse("2024-10-19T14:59:22.345Z"), "123 Main St", new ArrayList<>());
 
         when(traineeOperations.findById(traineeId)).thenReturn(Optional.of(response));
 
         var expectedJson = """
                 {
-                  "userId": 1,
                   "firstName": "John",
                   "lastName": "Doe",
-                  "username": "John.Doe",
                   "status": "ACTIVE",
-                  "traineeId": 1,
                   "dateOfBirth": "2024-10-19T14:59:22.345Z",
                   "address": "123 Main St",
                   "trainers": []
@@ -109,19 +106,16 @@ public class TraineeControllerTest {
         var request = new TraineeMergeRequest("John.Doe", "Sara", "Lesly",
                 OffsetDateTime.parse("2024-10-19T14:59:22.345Z"), "123 Main St", UserStatus.ACTIVE);
         var response = new TraineeResponse(
-                1L, "Sara", "Lesly", "Sara.Lesly", UserStatus.ACTIVE, traineeId,
+                "Sara", "Lesly", UserStatus.ACTIVE,
                 OffsetDateTime.parse("2024-10-19T14:59:22.345Z"), "123 Main St", new ArrayList<>());
 
         when(traineeOperations.mergeById(traineeId, request)).thenReturn(response);
 
         var expectedJson = """
                 {
-                  "userId": 1,
                   "firstName": "Sara",
                   "lastName": "Lesly",
-                  "username": "Sara.Lesly",
                   "status": "ACTIVE",
-                  "traineeId": 1,
                   "dateOfBirth": "2024-10-19T14:59:22.345Z",
                   "address": "123 Main St",
                   "trainers": []
@@ -152,19 +146,16 @@ public class TraineeControllerTest {
         var traineeId = 1L;
         var status = UserStatus.ACTIVE;
         var response = new TraineeResponse(
-                1L, "Sara", "Lesly", "Sara.Lesly", status, traineeId,
+                "Sara", "Lesly", status,
                 OffsetDateTime.parse("2024-10-19T14:59:22.345Z"), "123 Main St", new ArrayList<>());
 
         when(traineeOperations.changeStatusById(traineeId, status)).thenReturn(response);
 
         var expectedJson = """
                 {
-                  "userId": 1,
                   "firstName": "Sara",
                   "lastName": "Lesly",
-                  "username": "Sara.Lesly",
                   "status": "ACTIVE",
-                  "traineeId": 1,
                   "dateOfBirth": "2024-10-19T14:59:22.345Z",
                   "address": "123 Main St",
                   "trainers": []
@@ -190,19 +181,16 @@ public class TraineeControllerTest {
         var username = "Sara.Lesly";
         var status = UserStatus.ACTIVE;
         var response = new TraineeResponse(
-                1L, "Sara", "Lesly", username, status, 1L,
+                "Sara", "Lesly", status,
                 OffsetDateTime.parse("2024-10-19T14:59:22.345Z"), "123 Main St", new ArrayList<>());
 
         when(traineeOperations.changeStatusByUsername(username, status)).thenReturn(response);
 
         var expectedJson = """
                 {
-                  "userId": 1,
                   "firstName": "Sara",
                   "lastName": "Lesly",
-                  "username": "Sara.Lesly",
                   "status": "ACTIVE",
-                  "traineeId": 1,
                   "dateOfBirth": "2024-10-19T14:59:22.345Z",
                   "address": "123 Main St",
                   "trainers": []

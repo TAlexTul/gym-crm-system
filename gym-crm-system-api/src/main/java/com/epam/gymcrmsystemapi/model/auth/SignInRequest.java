@@ -6,6 +6,7 @@ public record SignInRequest(
 
         @JsonAlias({"username"})
         String login,
+
         String password
 
 ) {

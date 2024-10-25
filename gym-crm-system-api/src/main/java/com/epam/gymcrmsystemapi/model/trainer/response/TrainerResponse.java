@@ -10,23 +10,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public record TrainerResponse(Long userId,
-                              String firstName,
+public record TrainerResponse(String firstName,
                               String lastName,
-                              String username,
                               UserStatus status,
-                              Long trainerId,
                               SpecializationResponse specialization,
                               List<TraineeResponse> trainees) {
 
     public static TrainerResponse fromTrainer(Trainer trainer) {
         return new TrainerResponse(
-                trainer.getUser().getId(),
                 trainer.getUser().getFirstName(),
                 trainer.getUser().getLastName(),
-                trainer.getUser().getUsername(),
                 trainer.getUser().getStatus(),
-                trainer.getId(),
                 SpecializationResponse.fromSpecialization(trainer.getSpecialization()),
                 fromTrainees(trainer.getTrainees())
         );
@@ -34,12 +28,9 @@ public record TrainerResponse(Long userId,
 
     public static TrainerResponse fromTrainerWithBasicAttributes(Trainer trainer) {
         return new TrainerResponse(
-                trainer.getUser().getId(),
                 trainer.getUser().getFirstName(),
                 trainer.getUser().getLastName(),
-                trainer.getUser().getUsername(),
                 trainer.getUser().getStatus(),
-                trainer.getId(),
                 null,
                 null
         );

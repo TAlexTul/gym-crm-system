@@ -59,7 +59,8 @@ class GymRestExceptionHandlerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("/not-found");
 
-        ResponseEntity<ErrorResponse> responseEntity = gymRestExceptionHandler.handleResponseStatusException(ex, request);
+        ResponseEntity<ErrorResponse> responseEntity =
+                gymRestExceptionHandler.handleResponseStatusException(ex, request);
         ErrorResponse response = responseEntity.getBody();
 
         assertNotNull(response);

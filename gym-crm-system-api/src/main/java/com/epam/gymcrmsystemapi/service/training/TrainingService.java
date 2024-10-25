@@ -60,7 +60,8 @@ public class TrainingService implements TrainingOperations {
     public Page<TrainingResponse> filterBy(String traineeUsername, String trainerUsername,
                                            OffsetDateTime fromDate, OffsetDateTime toDate,
                                            Type trainingType, Pageable pageable) {
-        Specification<Training> spec = createSpecification(traineeUsername, trainerUsername, fromDate, toDate, trainingType);
+        Specification<Training> spec = createSpecification(
+                traineeUsername, trainerUsername, fromDate, toDate, trainingType);
         return trainingRepository.findAll(spec, pageable)
                 .map(TrainingResponse::fromTrainingWithBasicAttributes);
     }

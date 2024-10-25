@@ -22,15 +22,11 @@ class TraineeResponseTest {
 
         var response = TraineeResponse.fromTrainee(trainee);
 
-        assertEquals(trainee.getUser().getId(), response.userId());
         assertEquals(trainee.getUser().getFirstName(), response.firstName());
         assertEquals(trainee.getUser().getLastName(), response.lastName());
-        assertEquals(trainee.getUser().getUsername(), response.username());
         assertEquals(trainee.getUser().getStatus(), response.status());
-        assertEquals(trainee.getId(), response.traineeId());
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
         assertEquals(trainee.getAddress(), response.address());
-        assertEquals(trainee.getTrainers().iterator().next().getId(), response.trainers().get(0).trainerId());
 
         assertEquals(trainee.getTrainers().iterator().next().getSpecialization().getId().ordinal(),
                 response.trainers().iterator().next().specialization().id());
@@ -44,12 +40,9 @@ class TraineeResponseTest {
 
         var response = TraineeResponse.fromTraineeWithBasicAttribute(trainee);
 
-        assertEquals(trainee.getUser().getId(), response.userId());
         assertEquals(trainee.getUser().getFirstName(), response.firstName());
         assertEquals(trainee.getUser().getLastName(), response.lastName());
-        assertEquals(trainee.getUser().getUsername(), response.username());
         assertEquals(trainee.getUser().getStatus(), response.status());
-        assertEquals(trainee.getId(), response.traineeId());
         assertEquals(trainee.getDateOfBirth(), response.dateOfBirth());
         assertEquals(trainee.getAddress(), response.address());
         assertNull(response.trainers());

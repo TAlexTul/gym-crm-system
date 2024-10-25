@@ -11,4 +11,13 @@ public final class UserExceptions {
     public static ResponseStatusException duplicateUsername(String username) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, "User name '" + username + "' already taken");
     }
+
+    public static ResponseStatusException userNotFound(long id) {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id '" + id + "' not found");
+    }
+
+    public static ResponseStatusException userNotFound(String username) {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User with user name '" + username + "' not found");
+    }
 }

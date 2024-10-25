@@ -7,7 +7,6 @@ import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveRequest;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerRegistrationResponse;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.user.ChangeUserStatusRequest;
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
 import com.epam.gymcrmsystemapi.service.trainer.TrainerOperations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +29,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping(Routes.TRAINERS)
-@Tag(name = "Trainer", description = "Operations for creating, updating, retrieving and deleting trainer in the application")
+@Tag(name = "Trainer",
+        description = "Operations for creating, updating, retrieving and deleting trainer in the application")
 public class TrainerController {
 
     private final TrainerOperations trainerOperations;
@@ -43,14 +43,16 @@ public class TrainerController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Register a new trainer", description = "Register a new trainer and return the registration response")
+    @Operation(summary = "Register a new trainer",
+            description = "Register a new trainer and return the registration response")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Trainer registered successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = TrainerRegistrationResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
-    public ResponseEntity<TrainerRegistrationResponse> register(@RequestBody @Valid TrainerSaveRequest request, UriComponentsBuilder ucb) {
+    public ResponseEntity<TrainerRegistrationResponse> register(
+            @RequestBody @Valid TrainerSaveRequest request, UriComponentsBuilder ucb) {
         TrainerRegistrationResponse response = trainerOperations.create(request);
         return ResponseEntity
                 .created(ucb.path(Routes.TRAINERS + "/{id}").build(response.id()))
@@ -72,60 +74,50 @@ public class TrainerController {
     }
 
     @GetMapping(
-            value = "/trainers/not-assigned",
+            value = "/not-assigned",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "List unassigned trainers", description = "Retrieve a list of trainers not assigned to a trainee")
+    @Operation(summary = "List unassigned trainers",
+            description = "Retrieve a list of trainers not assigned to a trainee")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of unassigned trainers retrieved successfully")
+            @ApiResponse(responseCode = "200",
+                    description = "List of unassigned trainers retrieved successfully")
     })
     public List<TrainerResponse> listTrainersNotAssignedByTraineeUsername(@RequestParam String username) {
         return trainerOperations.listOfTrainersNotAssignedByTraineeUsername(username);
     }
 
     @GetMapping(
-            value = "/me",
+            value = "/account",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "Get current trainer", description = "Retrieve details of the currently authenticated trainer")
+    @Operation(summary = "Get current trainer",
+            description = "Retrieve details of the currently authenticated trainer")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
     public TrainerResponse getCurrentTrainer(/*@AuthenticationPrincipal*/ String username) {
-        return trainerOperations.findByUsername(username).orElseThrow(() -> TrainerExceptions.trainerNotFound(username));
+        return trainerOperations.findByUsername(username)
+                .orElseThrow(() -> TrainerExceptions.trainerNotFound(username));
     }
 
     @PatchMapping(
-            value = "/me",
+            value = "/account",
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "Update current trainer", description = "Update details of the currently authenticated trainer")
+    @Operation(summary = "Update current trainer",
+            description = "Update details of the currently authenticated trainer")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
-    public TrainerResponse mergeCurrentTrainer(/*@AuthenticationPrincipal*/ String username,
-                                                                            @RequestBody @Valid TrainerMergeRequest request) {
+    public TrainerResponse mergeCurrentTrainer(
+            /*@AuthenticationPrincipal*/ String username, @RequestBody @Valid TrainerMergeRequest request) {
         return trainerOperations.mergeByUsername(username, request);
     }
 
-    @PatchMapping(
-            value = "/me/login-data",
-            produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Update trainer's login data", description = "Change the login data for the currently authenticated trainer")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login data updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data")
-    })
-    public TrainerResponse changeCurrentTrainerLoginData(/*@AuthenticationPrincipal*/ String username,
-                                                                                      @RequestBody @Valid OverrideLoginRequest request) {
-        return trainerOperations.changeLoginDataByUsername(username, request);
-    }
-
-    @DeleteMapping("/me")
+    @DeleteMapping("/account")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete current trainer", description = "Delete the currently authenticated trainer")
     @ApiResponses(value = {
@@ -150,7 +142,8 @@ public class TrainerController {
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
     public TrainerResponse getTrainerById(@PathVariable long id) {
-        return trainerOperations.findById(id).orElseThrow(() -> TrainerExceptions.trainerNotFound(id));
+        return trainerOperations.findById(id)
+                .orElseThrow(() -> TrainerExceptions.trainerNotFound(id));
     }
 
     @PatchMapping(
@@ -172,7 +165,8 @@ public class TrainerController {
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Change trainer's status by ID", description = "Update the status of a trainer by their ID")
+    @Operation(summary = "Change trainer's status by ID",
+            description = "Update the status of a trainer by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer's status updated successfully"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
@@ -187,7 +181,8 @@ public class TrainerController {
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Change trainer's status by username", description = "Update the status of a trainer by their username")
+    @Operation(summary = "Change trainer's status by username",
+            description = "Update the status of a trainer by their username")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer's status updated successfully"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
@@ -195,21 +190,6 @@ public class TrainerController {
     public TrainerResponse changeTrainerStatusByUsername(@RequestParam String username,
                                                          @RequestBody @Valid ChangeUserStatusRequest request) {
         return trainerOperations.changeStatusByUsername(username, request.status());
-    }
-
-    @PatchMapping(
-            value = "/{id}/login-data",
-            produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Change trainer's login data by ID", description = "Update the login data of a trainer by their ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login data updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data")
-    })
-    public TrainerResponse changeTrainerLoginData(@PathVariable long id,
-                                                  @RequestBody @Valid OverrideLoginRequest request) {
-        return trainerOperations.changeLoginDataById(id, request);
     }
 
     @DeleteMapping("/{id}")
