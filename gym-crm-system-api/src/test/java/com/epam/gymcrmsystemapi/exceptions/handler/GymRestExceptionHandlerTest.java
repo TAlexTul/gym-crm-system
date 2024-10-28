@@ -2,47 +2,49 @@ package com.epam.gymcrmsystemapi.exceptions.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@WebMvcTest(GymRestExceptionHandler.class)
 class GymRestExceptionHandlerTest {
 
-    @InjectMocks
-    private GymRestExceptionHandler gymRestExceptionHandler;
+    private final GymRestExceptionHandler gymRestExceptionHandler = new GymRestExceptionHandler();
 
     @Test
     void handleMethodNotAllowedException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("/some-uri");
 
-        MethodNotAllowedException ex = new MethodNotAllowedException("GET", Collections.singleton(HttpMethod.POST));
+        HttpRequestMethodNotSupportedException ex = new HttpRequestMethodNotSupportedException("GET", Collections.singleton("POST"));
 
         ErrorResponse response = gymRestExceptionHandler.handleMethodNotAllowedException(ex, request);
 
         assertEquals(HttpStatus.METHOD_NOT_ALLOWED.value(), response.status());
         assertEquals("/some-uri", response.path());
-        assertEquals("405 METHOD_NOT_ALLOWED \"Request method 'GET' is not supported.\"", response.error());
+        assertEquals("Request method 'GET' is not supported", response.error()); // Убедитесь, что сообщение соответствует ожиданиям
         assertNotNull(response.timestamp());
     }
 
     @Test
     void handleValidationException() {
+        // Создаем мок исключения
         MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
+        List<FieldError> fieldErrors = List.of(
+                new FieldError("objectName", "fieldName", "Invalid value")
+        );
+        when(ex.getFieldErrors()).thenReturn(fieldErrors);
+
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("/validation-error");
 
@@ -50,6 +52,7 @@ class GymRestExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.status());
         assertEquals("/validation-error", response.path());
+        assertTrue(response.error().contains("fieldName: Invalid value"));
         assertNotNull(response.timestamp());
     }
 
@@ -71,7 +74,7 @@ class GymRestExceptionHandlerTest {
     }
 
     @Test
-    public void testHandleGenericException() {
+    void handleGenericException() {
         Exception exception = new Exception("Test exception message");
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getRequestURI()).thenReturn("/test/uri");
@@ -81,5 +84,6 @@ class GymRestExceptionHandlerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.status());
         assertEquals("An unexpected error occurred: Test exception message", response.error());
         assertEquals("/test/uri", response.path());
+        assertNotNull(response.timestamp());
     }
 }
