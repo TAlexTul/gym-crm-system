@@ -1,0 +1,56 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+    import: optional:file:.env-prod[.properties]
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/gym-prod
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+  liquibase:
+    enabled: false
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level --- [%thread] %logger{36} : [Transaction ID: %X{transactionId:-NO TRANSACTION}] [User ID: %X{userId:-NO USER ID}] [Message: %msg]%n"
+
+server:
+  port: ${SPRING_SERVER_PORT}
+  servlet:
+    context-path: /api
+  error:
+    include-message: never
+
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: never
+    info:
+      enabled: true
+  info:
+    app:
+      name: ${SPRING_APP_NAME}
+      version: ${SPRING_APP_VERSION}
+
+security:
+  jwt:
+    secret-key: ${SPRING_JWT_SECRET}
+    expiration-time: ${SPRING_JWT_EXPIRATION_TIME}
