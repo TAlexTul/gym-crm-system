@@ -13,5 +13,6 @@ public final class Routes {
     public final static String TRAINING_TYPES = API_ROOT + "/training-types";
     public static final String TOKEN = API_ROOT + "/token";
     public static final String LOGIN = API_ROOT + "/login-data";
+    public static final String HEALTH_API = API_ROOT + "/health-api";
 
 }
