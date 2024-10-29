@@ -22,7 +22,7 @@ create table users
 create table trainees
 (
     id            bigserial primary key,
-    date_of_birth timestamptz,
+    date_of_birth timestamp with time zone,
     address       text,
     user_id       bigint,
     constraint trainees_user_fk foreign key (user_id)
@@ -107,9 +107,9 @@ values (0, 'STRENGTH_TRAINING'),
 create table trainings
 (
     id                bigserial primary key,
-    training_name     text        not null,
-    training_date     timestamptz not null,
-    training_duration bigint      not null
+    training_name     text                     not null,
+    training_date     timestamp with time zone not null,
+    training_duration bigint                   not null
 );
 
 create table trainings_training_types

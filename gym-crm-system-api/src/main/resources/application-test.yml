@@ -1,13 +1,17 @@
 spring:
   config:
     activate:
-      on-profile: local-dev
-    import: optional:file:.env-local-dev[.properties]
+      on-profile: test
+    import: optional:file:.env-test[.properties]
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_HOST:localhost}:5432/gym
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
 server:
   port: ${SPRING_SERVER_PORT}
@@ -15,8 +19,10 @@ server:
     include-message: always
     include-binding-errors: always
 
-springdoc:
-  show-actuator: true
+logging:
+  level:
+    root: DEBUG
+    com.epam.gymcrmsystemapi: DEBUG
 
 management:
   endpoint:
@@ -25,4 +31,4 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, prometheus
+        include: "*"

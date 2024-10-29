@@ -5,22 +5,8 @@ spring:
     active: local-dev
   jpa:
     open-in-view: false
-    show-sql: true
 
 password:
   strength: 10
   length: 10
   characters: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()
-
-server:
-  error:
-    include-message: always
-    include-binding-errors: always
-
-springdoc:
-  show-actuator: true
-
-management:
-  endpoint:
-    health:
-      show-details: always
