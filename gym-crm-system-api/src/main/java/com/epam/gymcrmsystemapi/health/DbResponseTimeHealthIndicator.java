@@ -8,7 +8,7 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("custom-db-response-time")
 public class DbResponseTimeHealthIndicator implements HealthIndicator {
 
     private static final Logger log = LoggerFactory.getLogger(DbResponseTimeHealthIndicator.class);
