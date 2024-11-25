@@ -1,4 +1,4 @@
-package com.epam.gymcrmsystemapi.model.auth;
+package com.epam.gymcrmsystemapi.model.auth.request;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 

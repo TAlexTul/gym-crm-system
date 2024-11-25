@@ -5,7 +5,7 @@ spring:
     import: optional:file:.env-local-dev[.properties]
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${db-name}
+    url: jdbc:postgresql://${SPRING_DATASOURCE_HOST:localhost}:5432/${db-name}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
 
@@ -24,7 +24,7 @@ springdoc:
 management:
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
   endpoints:
     web:
       exposure:

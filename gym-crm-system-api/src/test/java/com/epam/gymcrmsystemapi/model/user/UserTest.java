@@ -45,7 +45,8 @@ class UserTest {
                 LAST_NAME_1,
                 USERNAME_1,
                 PASSWORD_1,
-                UserStatus.ACTIVE
+                UserStatus.ACTIVE,
+                null
         );
     }
 
@@ -56,7 +57,8 @@ class UserTest {
                 LAST_NAME_2,
                 USERNAME_2,
                 PASSWORD_2,
-                UserStatus.ACTIVE
+                UserStatus.ACTIVE,
+                null
         );
     }
 }

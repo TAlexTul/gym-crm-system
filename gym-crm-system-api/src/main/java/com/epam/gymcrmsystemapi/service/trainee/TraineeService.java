@@ -11,6 +11,7 @@ import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
 import com.epam.gymcrmsystemapi.model.trainer.Trainer;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
 import com.epam.gymcrmsystemapi.model.training.Training;
+import com.epam.gymcrmsystemapi.model.user.KnownAuthority;
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.repository.TraineeRepository;
@@ -128,7 +129,7 @@ public class TraineeService implements TraineeOperations {
     }
 
     private Trainee save(TraineeSaveRequest request) {
-        User user = userOperations.save(request.firstName(), request.lastName());
+        User user = userOperations.save(request.firstName(), request.lastName(), KnownAuthority.ROLE_TRAINEE);
 
         var trainee = new Trainee();
         trainee.setDateOfBirth(request.dateOfBirth());
@@ -168,7 +169,6 @@ public class TraineeService implements TraineeOperations {
         if (status != null && trainee.getUser().getStatus() != status) {
             trainee.getUser().setStatus(status);
         }
-
         return trainee;
     }
 

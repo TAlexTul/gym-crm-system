@@ -1,6 +1,4 @@
 spring:
-  config:
-    import: optional:file:.env[.properties]
   profiles:
     active: local-dev
   jpa:
@@ -10,3 +8,15 @@ password:
   strength: 10
   length: 10
   characters: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()
+
+gym-crm-system:
+  security:
+    jwt:
+      secret: eitu9aichae7eitee9XiciweishohW3pieshaifasosai5xie9Oomobulohyu8ie
+      access-expire-in: 10m
+      refresh-expire-in: 3d
+    admins:
+      defaultadmin:
+        first-name: default
+        last-name: admin
+        password: qwertyuiop

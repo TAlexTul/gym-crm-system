@@ -2,6 +2,8 @@ package com.epam.gymcrmsystemapi.model.user;
 
 import jakarta.persistence.*;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Entity
@@ -28,17 +30,28 @@ public class User {
     @Enumerated(EnumType.ORDINAL)
     private UserStatus status;
 
+    @ManyToMany
+    @JoinTable(name = "user_authorities",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id")
+    )
+    @MapKeyEnumerated(EnumType.ORDINAL)
+    @MapKey(name = "id")
+    private Map<KnownAuthority, UserAuthority> authorities = new EnumMap<>(KnownAuthority.class);
+
     public User() {
     }
 
     public User(Long id, String firstName, String lastName,
-                String username, String password, UserStatus status) {
+                String username, String password, UserStatus status,
+                Map<KnownAuthority, UserAuthority> authorities) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.password = password;
         this.status = status;
+        this.authorities = authorities;
     }
 
     public Long getId() {
@@ -87,6 +100,14 @@ public class User {
 
     public void setStatus(UserStatus status) {
         this.status = status;
+    }
+
+    public Map<KnownAuthority, UserAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Map<KnownAuthority, UserAuthority> authorities) {
+        this.authorities = authorities;
     }
 
     @Override

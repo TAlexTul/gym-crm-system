@@ -32,3 +32,13 @@ management:
     web:
       exposure:
         include: "*"
+
+host: http://localhost:8080
+db-name: gym-test
+
+custom:
+  health:
+    db-response-time:
+      enabled: true
+    api:
+      enabled: true

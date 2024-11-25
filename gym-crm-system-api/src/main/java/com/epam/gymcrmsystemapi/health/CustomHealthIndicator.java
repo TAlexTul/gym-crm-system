@@ -15,7 +15,11 @@ public class CustomHealthIndicator implements HealthIndicator {
     @Value("${host}")
     private String host;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+    public CustomHealthIndicator(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Override
     public Health health() {

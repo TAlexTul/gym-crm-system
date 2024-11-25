@@ -118,7 +118,7 @@ public class TrainingService implements TrainingOperations {
             if (traineeUsername == null) return criteriaBuilder.conjunction();
             Join<Training, Trainee> traineeJoin = root.join("trainees");
             Join<Trainee, User> userJoin = traineeJoin.join("user");
-            return criteriaBuilder.like(userJoin.get("username"), "%" + traineeUsername + "%");
+            return criteriaBuilder.like(userJoin.get("firstName"), "%" + traineeUsername + "%");
         };
     }
 
@@ -127,7 +127,7 @@ public class TrainingService implements TrainingOperations {
             if (trainerUsername == null) return criteriaBuilder.conjunction();
             Join<Training, Trainer> trainerJoin = root.join("trainers");
             Join<Trainer, User> userJoin = trainerJoin.join("user");
-            return criteriaBuilder.like(userJoin.get("username"), "%" + trainerUsername + "%");
+            return criteriaBuilder.like(userJoin.get("firstName"), "%" + trainerUsername + "%");
         };
     }
 

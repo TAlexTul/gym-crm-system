@@ -6,7 +6,7 @@ import com.epam.gymcrmsystemapi.model.trainer.request.TrainerMergeRequest;
 import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveRequest;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerRegistrationResponse;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
-import com.epam.gymcrmsystemapi.model.user.ChangeUserStatusRequest;
+import com.epam.gymcrmsystemapi.model.user.request.ChangeUserStatusRequest;
 import com.epam.gymcrmsystemapi.service.trainer.TrainerOperations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -51,8 +52,8 @@ public class TrainerController {
                             schema = @Schema(implementation = TrainerRegistrationResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
-    public ResponseEntity<TrainerRegistrationResponse> register(
-            @RequestBody @Valid TrainerSaveRequest request, UriComponentsBuilder ucb) {
+    public ResponseEntity<TrainerRegistrationResponse> register(@RequestBody @Valid TrainerSaveRequest request,
+                                                                UriComponentsBuilder ucb) {
         TrainerRegistrationResponse response = trainerOperations.create(request);
         return ResponseEntity
                 .created(ucb.path(Routes.TRAINERS + "/{id}").build(response.id()))
@@ -97,7 +98,7 @@ public class TrainerController {
             @ApiResponse(responseCode = "200", description = "Trainer retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
-    public TrainerResponse getCurrentTrainer(String username) {
+    public TrainerResponse getCurrentTrainer(@AuthenticationPrincipal String username) {
         return trainerOperations.findByUsername(username)
                 .orElseThrow(() -> TrainerExceptions.trainerNotFound(username));
     }
@@ -112,7 +113,8 @@ public class TrainerController {
             @ApiResponse(responseCode = "200", description = "Trainer updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
-    public TrainerResponse mergeCurrentTrainer(String username, @RequestBody @Valid TrainerMergeRequest request) {
+    public TrainerResponse mergeCurrentTrainer(@AuthenticationPrincipal String username,
+                                               @RequestBody @Valid TrainerMergeRequest request) {
         return trainerOperations.mergeByUsername(username, request);
     }
 
@@ -123,7 +125,7 @@ public class TrainerController {
             @ApiResponse(responseCode = "204", description = "Trainer deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
-    public void deleteCurrentTrainer(String username) {
+    public void deleteCurrentTrainer(@AuthenticationPrincipal String username) {
         trainerOperations.deleteByUsername(username);
     }
 

@@ -4,7 +4,6 @@ import com.epam.gymcrmsystemapi.model.trainer.request.TrainerMergeRequest;
 import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveRequest;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerRegistrationResponse;
 import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
-import com.epam.gymcrmsystemapi.model.user.OverrideLoginRequest;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,10 +30,6 @@ public interface TrainerOperations {
     TrainerResponse changeStatusById(long id, UserStatus status);
 
     TrainerResponse changeStatusByUsername(String username, UserStatus status);
-
-    TrainerResponse changeLoginDataById(long id, OverrideLoginRequest request);
-
-    TrainerResponse changeLoginDataByUsername(String username, OverrideLoginRequest request);
 
     void deleteById(long id);
 
