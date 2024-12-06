@@ -1,0 +1,8 @@
+spring:
+  config:
+    activate:
+      on-profile: local-dev
+    import: optional:file:.env-local-dev[.properties]
+
+server:
+  port: ${SPRING_SERVER_PORT_EUREKA}

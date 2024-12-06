@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: gym-crm-system-api
   profiles:
     active: local-dev
   jpa:
@@ -20,3 +22,35 @@ gym-crm-system:
         first-name: default
         last-name: admin
         password: qwertyuiop
+
+trainer-workload-api:
+  name: trainer-workload-api
+  uri: /api/v1/training
+
+resilience4j.circuitbreaker:
+  instances:
+    add:
+      registerHealthIndicator: true
+      ringBufferSizeInClosedState: 5
+      ringBufferSizeInHalfOpenState: 3
+      waitDurationInOpenState: 10s
+      failureRateThreshold: 50
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+        - java.util.concurrent.TimeoutException
+        - org.springframework.web.client.ResourceAccessException
+        - org.springframework.web.client.HttpClientErrorException
+
+    delete:
+      registerHealthIndicator: true
+      ringBufferSizeInClosedState: 10
+      ringBufferSizeInHalfOpenState: 5
+      waitDurationInOpenState: 15s
+      failureRateThreshold: 60
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+        - java.util.concurrent.TimeoutException
+        - org.springframework.web.client.ResourceAccessException
+        - org.springframework.web.client.HttpClientErrorException

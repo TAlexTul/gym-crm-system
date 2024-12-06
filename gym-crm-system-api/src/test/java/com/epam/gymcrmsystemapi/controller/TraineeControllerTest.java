@@ -195,7 +195,7 @@ public class TraineeControllerTest {
     void testChangeTrainersSet() throws Exception {
         var request = new TraineeChangeTrainersSetRequest("John.Doe", List.of("Jane.Jenkins"));
         var response = List.of(new TrainerResponse(
-                "Jane", "Jenkins", UserStatus.ACTIVE,
+                "Jane.Jenkins", "Jane", "Jenkins", UserStatus.ACTIVE,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 List.of(new TraineeResponseForTrainerResponse("John.Doe", "John", "Doe"))));
@@ -203,6 +203,7 @@ public class TraineeControllerTest {
         String expectedJson = """
                 [
                     {
+                      "username": "Jane.Jenkins",
                       "firstName": "Jane",
                       "lastName": "Jenkins",
                       "status": "ACTIVE",

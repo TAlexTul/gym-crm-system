@@ -3,6 +3,7 @@ package com.epam.gymcrmsystemapi.service.auth;
 import com.epam.gymcrmsystemapi.config.security.properties.AdminProperties;
 import com.epam.gymcrmsystemapi.config.security.properties.JWTProperties;
 import com.epam.gymcrmsystemapi.config.security.properties.SecurityProperties;
+import com.epam.gymcrmsystemapi.exceptions.auth.InvalidRefreshTokenException;
 import com.epam.gymcrmsystemapi.model.auth.CustomUserDetails;
 import com.epam.gymcrmsystemapi.model.auth.RefreshToken;
 import com.epam.gymcrmsystemapi.model.auth.response.AccessTokenResponse;
@@ -21,10 +22,10 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class JWTAuthServiceTest {
@@ -38,6 +39,9 @@ class JWTAuthServiceTest {
     private final static String SECRET = "eitu9aichae7eitee9XiciweishohW3pieshaifasosai5xie9Oomobulohyu8ie";
     private final Duration jwtExpiration = Duration.ofMinutes(15);
     private final Duration refreshExpiration = Duration.ofDays(7);
+
+    private String refreshToken;
+    private String ownerUsername;
 
     @BeforeEach
     void setUp() {
@@ -61,6 +65,9 @@ class JWTAuthServiceTest {
         MockitoAnnotations.openMocks(this);
 
         jwtAuthService = new JWTAuthService(securityProperties, refreshTokenRepository, userRepository);
+
+        refreshToken = "some-refresh-token";
+        ownerUsername = "owner-username";
     }
 
     @Test
@@ -81,6 +88,30 @@ class JWTAuthServiceTest {
         verify(refreshTokenRepository, only()).save(any(RefreshToken.class));
     }
 
+    @Test
+    void shouldThrowInvalidRefreshTokenExceptionWhenTokenNotFound() {
+        when(refreshTokenRepository.findById(any())).thenReturn(Optional.empty());
+
+        assertThrows(InvalidRefreshTokenException.class, () ->
+                jwtAuthService.invalidateToken(refreshToken, ownerUsername)
+        );
+    }
+
+    @Test
+    void shouldThrowInvalidRefreshTokenExceptionWhenOwnerDoesNotMatch() {
+        RefreshToken mockToken = mock(RefreshToken.class);
+        User mockUser = mock(User.class);
+
+        when(refreshTokenRepository.findById(any()))
+                .thenReturn(Optional.of(mockToken));
+        when(mockToken.getUser()).thenReturn(mockUser);
+        when(mockUser.getUsername()).thenReturn("different-username");
+
+        assertThrows(InvalidRefreshTokenException.class, () ->
+                jwtAuthService.invalidateToken(refreshToken, ownerUsername)
+        );
+    }
+
     private RefreshToken getRefreshToken(User user) {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setValue(UUID.randomUUID());
@@ -93,7 +124,7 @@ class JWTAuthServiceTest {
     private User getUser() {
         var user = new User();
         user.setId(1L);
-        user.setFirstName("Jonh");
+        user.setFirstName("John");
         user.setLastName("Doe");
         user.setUsername("John.Doe");
         user.setPassword("aB9dE4fGhJ");

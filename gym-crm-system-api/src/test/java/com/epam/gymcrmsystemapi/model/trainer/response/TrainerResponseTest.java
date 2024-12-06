@@ -17,6 +17,7 @@ class TrainerResponseTest {
         Trainer trainer = getTrainer();
         var response = TrainerResponse.fromTrainer(trainer);
 
+        assertEquals(trainer.getUser().getUsername(), response.username());
         assertEquals(trainer.getUser().getFirstName(), response.firstName());
         assertEquals(trainer.getUser().getLastName(), response.lastName());
         assertEquals(trainer.getUser().getStatus(), response.status());

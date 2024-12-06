@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: trainer-workload-api
+  profiles:
+    active: local-dev
+  jpa:
+    open-in-view: false
+
+security:
+  jwt:
+    secret: eitu9aichae7eitee9XiciweishohW3pieshaifasosai5xie9Oomobulohyu8ie

@@ -1,4 +1,4 @@
-package com.epam.gymcrmsystemapi.exceptions.handler;
+package com.epam.trainerworkloadapi.exceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -17,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class GymRestExceptionHandlerTest {
+class RestExceptionHandlerTest {
 
-    private final GymRestExceptionHandler gymRestExceptionHandler = new GymRestExceptionHandler();
+    private final RestExceptionHandler restExceptionHandler = new RestExceptionHandler();
 
     @Test
     void handleMethodNotAllowedException() {
@@ -28,7 +28,7 @@ class GymRestExceptionHandlerTest {
 
         HttpRequestMethodNotSupportedException ex = new HttpRequestMethodNotSupportedException("GET", Collections.singleton("POST"));
 
-        ErrorResponse response = gymRestExceptionHandler.handleMethodNotAllowedException(ex, request);
+        ErrorResponse response = restExceptionHandler.handleMethodNotAllowedException(ex, request);
 
         assertEquals(HttpStatus.METHOD_NOT_ALLOWED.value(), response.status());
         assertEquals("/some-uri", response.path());
@@ -48,7 +48,7 @@ class GymRestExceptionHandlerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("/validation-error");
 
-        ErrorResponse response = gymRestExceptionHandler.handleValidationException(ex, request);
+        ErrorResponse response = restExceptionHandler.handleValidationException(ex, request);
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.status());
         assertEquals("/validation-error", response.path());
@@ -63,7 +63,7 @@ class GymRestExceptionHandlerTest {
         request.setRequestURI("/not-found");
 
         ResponseEntity<ErrorResponse> responseEntity =
-                gymRestExceptionHandler.handleResponseStatusException(ex, request);
+                restExceptionHandler.handleResponseStatusException(ex, request);
         ErrorResponse response = responseEntity.getBody();
 
         assertNotNull(response);
@@ -79,7 +79,7 @@ class GymRestExceptionHandlerTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getRequestURI()).thenReturn("/test/uri");
 
-        ErrorResponse response = gymRestExceptionHandler.handleGenericException(exception, request);
+        ErrorResponse response = restExceptionHandler.handleGenericException(exception, request);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.status());
         assertEquals("An unexpected error occurred: Test exception message", response.error());
