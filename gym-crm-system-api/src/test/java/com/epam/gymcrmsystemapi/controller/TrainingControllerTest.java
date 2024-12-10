@@ -15,8 +15,10 @@ import com.epam.gymcrmsystemapi.model.training.type.response.TrainingTypeRespons
 import com.epam.gymcrmsystemapi.model.user.User;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.service.training.TrainingOperations;
+import com.epam.gymcrmsystemapi.service.workload.TrainerWorkloadOperations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,8 +31,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class TrainingControllerTest {
@@ -38,12 +39,17 @@ public class TrainingControllerTest {
     private MockMvc mvc;
 
     private TrainingOperations trainingOperations;
+    private TrainerWorkloadOperations trainerWorkloadOperations;
+    String encodedJwtToken;
 
     @BeforeEach
     void setUp() {
         trainingOperations = mock(TrainingOperations.class);
+        trainerWorkloadOperations = mock(TrainerWorkloadOperations.class);
+        encodedJwtToken = "someEncodedJwtToken";
+
         mvc = MockMvcBuilders
-                .standaloneSetup(new TrainingController(trainingOperations))
+                .standaloneSetup(new TrainingController(trainingOperations, trainerWorkloadOperations))
                 .build();
     }
 
@@ -67,11 +73,13 @@ public class TrainingControllerTest {
                 300000L);
 
         when(trainingOperations.create(request)).thenReturn(response);
+        doNothing().when(trainerWorkloadOperations).invoke(request, response, encodedJwtToken);
 
         var expectedJson = getExpectedJson();
 
         mvc.perform(post(Routes.TRAININGS)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + encodedJwtToken)
                         .content("""
                                     {
                                       "traineeUsername": "John.Doe",
@@ -89,6 +97,7 @@ public class TrainingControllerTest {
                 .andExpect(content().json(expectedJson));
 
         verify(trainingOperations, only()).create(request);
+        verify(trainerWorkloadOperations, only()).invoke(request, response, encodedJwtToken);
     }
 
     @Test
@@ -113,6 +122,29 @@ public class TrainingControllerTest {
                 .andExpect(content().json(expectedJson));
 
         verify(trainingOperations, only()).findById(id);
+    }
+
+    @Test
+    void testDeleteTrainingById() throws Exception {
+        var id = 1L;
+        var response = new TrainingResponse(
+                1L,
+                getTraineeResponses(Set.of(getTrainee())),
+                getTrainerResponses(Set.of(getTrainer())),
+                "Training 1",
+                getTrainingTypes(List.of(new TrainingType(Type.STRENGTH_TRAINING, Type.STRENGTH_TRAINING))),
+                OffsetDateTime.parse("2024-10-19T14:23:09.31Z"),
+                300000L);
+
+        when(trainingOperations.deleteById(id)).thenReturn(Optional.of(response));
+        doNothing().when(trainerWorkloadOperations).invoke(response, encodedJwtToken);
+
+        mvc.perform(delete(Routes.TRAININGS + "/" + id)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + encodedJwtToken))
+                .andExpect(status().isNoContent());
+
+        verify(trainingOperations, only()).deleteById(id);
+        verify(trainerWorkloadOperations, only()).invoke(response, encodedJwtToken);
     }
 
     private String getExpectedJson() {

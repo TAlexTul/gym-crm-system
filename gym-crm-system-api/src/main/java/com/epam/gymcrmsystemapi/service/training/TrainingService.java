@@ -73,6 +73,14 @@ public class TrainingService implements TrainingOperations {
                 .map(TrainingResponse::fromTraining);
     }
 
+    @Override
+    public Optional<TrainingResponse> deleteById(long id) {
+        Optional<Training> training = trainingRepository.findById(id);
+        training.ifPresent(trainingRepository::delete);
+
+        return training.map(TrainingResponse::fromTraining);
+    }
+
     private Training save(TrainingSaveRequest request) {
         Optional<Trainee> trainee = traineeRepository.findByUsername(request.traineeUsername());
         Optional<Trainer> trainer = trainerRepository.findByUsername(request.trainerUsername());
@@ -97,7 +105,9 @@ public class TrainingService implements TrainingOperations {
 
         trainee.ifPresent(trainees::add);
         trainer.ifPresent(trainers::add);
-        trainingType.ifPresent(trainingTypes::add);
+        trainingType.ifPresent(type -> {
+            if (!trainingTypes.contains(type)) trainingTypes.add(type);
+        });
 
         return trainingRepository.save(training);
     }

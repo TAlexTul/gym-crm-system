@@ -76,7 +76,7 @@ public class TrainerControllerTest {
     void testGetById() throws Exception {
         var trainerId = 1L;
         var response = new TrainerResponse(
-                "Jane", "Jenkins", UserStatus.ACTIVE,
+                "Jane,Jenkins", "Jane", "Jenkins", UserStatus.ACTIVE,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
@@ -99,7 +99,7 @@ public class TrainerControllerTest {
         var request = new TrainerMergeRequest("Sara.Lesly", "Jane", "Jenkins", UserStatus.ACTIVE,
                 new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER));
         var response = new TrainerResponse(
-                "Jane", "Jenkins", UserStatus.ACTIVE,
+                "Jane,Jenkins" , "Jane", "Jenkins", UserStatus.ACTIVE,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
@@ -133,7 +133,7 @@ public class TrainerControllerTest {
     void testChangeTrainerStatusById() throws Exception {
         var trainerId = 1L;
         var status = UserStatus.ACTIVE;
-        var response = new TrainerResponse("Jane", "Jenkins", status,
+        var response = new TrainerResponse("Jane,Jenkins", "Jane", "Jenkins", status,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
@@ -159,7 +159,7 @@ public class TrainerControllerTest {
     void testChangeTrainerStatusByUsername() throws Exception {
         var username = "Sara.Lesly";
         var status = UserStatus.ACTIVE;
-        var response = new TrainerResponse("Jane", "Jenkins", status,
+        var response = new TrainerResponse("Jane,Jenkins", "Jane", "Jenkins", status,
                 SpecializationResponse.fromSpecialization(
                         new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER)),
                 new ArrayList<>());
@@ -196,6 +196,7 @@ public class TrainerControllerTest {
     private String getExpectedJson() {
         return """
                 {
+                  "username": "Jane,Jenkins",
                   "firstName": "Jane",
                   "lastName": "Jenkins",
                   "status": "ACTIVE",

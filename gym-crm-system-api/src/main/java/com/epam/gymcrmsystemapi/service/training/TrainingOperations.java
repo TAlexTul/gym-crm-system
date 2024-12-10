@@ -21,4 +21,6 @@ public interface TrainingOperations {
 
     Optional<TrainingResponse> findById(long id);
 
+    Optional<TrainingResponse> deleteById(long id);
+
 }

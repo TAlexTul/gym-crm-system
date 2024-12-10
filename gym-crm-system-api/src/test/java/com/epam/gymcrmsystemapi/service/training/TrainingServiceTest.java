@@ -22,7 +22,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -153,6 +155,100 @@ class TrainingServiceTest {
 
         assertFalse(response.isPresent());
         verify(trainingRepository, only()).findById(id);
+    }
+
+    @Test
+    void shouldFilterTrainingsByCriteria() {
+        Training training = getTraining();
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Training> page = new PageImpl<>(Collections.singletonList(training));
+
+        when(trainingRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+
+        String traineeUsername = training.getTrainees().stream().findFirst().orElseThrow().getUser().getUsername();
+        String trainerUsername = training.getTrainers().stream().findFirst().orElseThrow().getUser().getUsername();
+        OffsetDateTime fromDate = OffsetDateTime.now().minusDays(1);
+        OffsetDateTime toDate = OffsetDateTime.now().plusDays(1);
+
+        Page<TrainingResponse> responses = trainingService.filterBy(
+                traineeUsername, trainerUsername, fromDate, toDate, Type.STRENGTH_TRAINING, pageable
+        );
+
+        assertEquals(1, responses.getTotalElements());
+        assertEquals(1, responses.getContent().size());
+        assertEquals(training.getId(), responses.getContent().get(0).id());
+        assertEquals(training.getTrainingName(), responses.getContent().get(0).trainingName());
+        assertEquals(training.getTrainingDate(), responses.getContent().get(0).trainingDate());
+        assertEquals(training.getTrainingDuration(), responses.getContent().get(0).trainingDuration());
+        verify(trainingRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenNoTrainingsMatch() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Training> emptyPage = new PageImpl<>(Collections.emptyList());
+
+        when(trainingRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(emptyPage);
+
+        String traineeUsername = "traineeTest";
+        String trainerUsername = "trainerTest";
+        OffsetDateTime fromDate = OffsetDateTime.now().minusDays(1);
+        OffsetDateTime toDate = OffsetDateTime.now().plusDays(1);
+
+        Page<TrainingResponse> result = trainingService.filterBy(
+                traineeUsername, trainerUsername, fromDate, toDate, Type.STRENGTH_TRAINING, pageable
+        );
+
+        assertTrue(result.isEmpty());
+        verify(trainingRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void shouldDeleteTrainingByIdAndReturnResponse() {
+        long id = 1L;
+        Training training = getTraining();
+
+        when(trainingRepository.findById(id)).thenReturn(Optional.of(training));
+        doNothing().when(trainingRepository).delete(training);
+
+        Optional<TrainingResponse> response = trainingService.deleteById(id);
+
+        assertTrue(response.isPresent());
+        assertEquals(training.getId(), response.get().id());
+
+        assertEquals(training.getTrainees().iterator().next().getAddress(),
+                response.get().trainees().iterator().next().address());
+        assertEquals(training.getTrainees().iterator().next().getDateOfBirth(),
+                response.get().trainees().iterator().next().dateOfBirth());
+
+        assertEquals(training.getTrainers().iterator().next().getSpecialization().getId().ordinal(),
+                response.get().trainers().iterator().next().specialization().id());
+        assertEquals(training.getTrainers().iterator().next().getSpecialization().getSpecialization(),
+                response.get().trainers().iterator().next().specialization().specializationType());
+
+        assertEquals(training.getTrainingName(), response.get().trainingName());
+
+        assertEquals(training.getTrainingTypes().get(0).getId().ordinal(), response.get().trainingTypes().get(0).id());
+        assertEquals(training.getTrainingTypes().get(0).getType(), response.get().trainingTypes().get(0).type());
+
+        assertEquals(training.getTrainingDate(), response.get().trainingDate());
+        assertEquals(training.getTrainingDuration(), response.get().trainingDuration());
+        verify(trainingRepository, times(1)).findById(id);
+        verify(trainingRepository, times(1)).delete(training);
+    }
+
+    @Test
+    void shouldReturnEmptyOptionalWhenTrainingNotFound() {
+        long id = 1L;
+        Training training = getTraining();
+
+        when(trainingRepository.findById(id)).thenReturn(Optional.empty());
+
+        Optional<TrainingResponse> response = trainingService.deleteById(id);
+
+        verify(trainingRepository, never()).delete(training);
+
+        assertFalse(response.isPresent());
     }
 
     private TrainingSaveRequest getTrainingSaveRequest() {

@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public record TrainerResponse(String firstName,
+public record TrainerResponse(String username,
+                              String firstName,
                               String lastName,
                               UserStatus status,
                               SpecializationResponse specialization,
@@ -18,6 +19,7 @@ public record TrainerResponse(String firstName,
 
     public static TrainerResponse fromTrainer(Trainer trainer) {
         return new TrainerResponse(
+                trainer.getUser().getUsername(),
                 trainer.getUser().getFirstName(),
                 trainer.getUser().getLastName(),
                 trainer.getUser().getStatus(),
@@ -28,6 +30,7 @@ public record TrainerResponse(String firstName,
 
     public static TrainerResponse fromTrainerWithBasicAttributes(Trainer trainer) {
         return new TrainerResponse(
+                trainer.getUser().getUsername(),
                 trainer.getUser().getFirstName(),
                 trainer.getUser().getLastName(),
                 trainer.getUser().getStatus(),

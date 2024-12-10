@@ -35,7 +35,7 @@ public class Training {
 
     @OneToMany(cascade = CascadeType.DETACH)
     @JoinTable(
-            name = "trainings_training_types",
+            name = "training_training_types",
             joinColumns = @JoinColumn(name = "training_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "training_type_id", referencedColumnName = "id")
     )

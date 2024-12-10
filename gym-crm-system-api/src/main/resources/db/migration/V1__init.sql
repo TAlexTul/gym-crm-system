@@ -148,14 +148,14 @@ create table trainings
     training_duration bigint                   not null
 );
 
-create table trainings_training_types
+create table training_training_types
 (
     training_id      bigint,
     training_type_id int,
     primary key (training_id, training_type_id),
-    constraint trainings_training_types_training_fk foreign key (training_id)
+    constraint training_training_types_training_fk foreign key (training_id)
         references trainings (id) on delete cascade,
-    constraint trainings_training_types_type_fk foreign key (training_type_id)
+    constraint training_training_types_type_fk foreign key (training_type_id)
         references training_types (id) on delete cascade
 );
 

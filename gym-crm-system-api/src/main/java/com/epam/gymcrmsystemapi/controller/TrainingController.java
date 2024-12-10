@@ -1,21 +1,25 @@
 package com.epam.gymcrmsystemapi.controller;
 
 import com.epam.gymcrmsystemapi.Routes;
+import com.epam.gymcrmsystemapi.config.security.SecurityConstants;
 import com.epam.gymcrmsystemapi.exceptions.TrainingExceptions;
 import com.epam.gymcrmsystemapi.model.training.request.TrainingSaveRequest;
 import com.epam.gymcrmsystemapi.model.training.response.TrainingResponse;
 import com.epam.gymcrmsystemapi.model.training.type.Type;
 import com.epam.gymcrmsystemapi.service.training.TrainingOperations;
+import com.epam.gymcrmsystemapi.service.workload.TrainerWorkloadOperations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +34,12 @@ import java.time.OffsetDateTime;
 public class TrainingController {
 
     private final TrainingOperations trainingOperations;
+    private final TrainerWorkloadOperations trainerWorkloadOperations;
 
-    public TrainingController(TrainingOperations trainingOperations) {
+    public TrainingController(TrainingOperations trainingOperations,
+                              TrainerWorkloadOperations trainerWorkloadOperations) {
         this.trainingOperations = trainingOperations;
+        this.trainerWorkloadOperations = trainerWorkloadOperations;
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -43,9 +50,12 @@ public class TrainingController {
             @ApiResponse(responseCode = "201", description = "Training registered successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
-    public ResponseEntity<TrainingResponse> register(
-            @RequestBody @Valid TrainingSaveRequest request, UriComponentsBuilder ucb) {
+    public ResponseEntity<TrainingResponse> register(HttpServletRequest req,
+                                                     @RequestBody @Valid TrainingSaveRequest request,
+                                                     UriComponentsBuilder ucb) {
+        String encodedJwt = getEncodedJwt(req);
         TrainingResponse response = trainingOperations.create(request);
+        trainerWorkloadOperations.invoke(request, response, encodedJwt);
         return ResponseEntity
                 .created(ucb.path(Routes.TRAININGS + "/{id}").build(response.id()))
                 .body(response);
@@ -93,5 +103,28 @@ public class TrainingController {
     })
     public TrainingResponse getTrainingById(@PathVariable long id) {
         return trainingOperations.findById(id).orElseThrow(() -> TrainingExceptions.trainingNotFound(id));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Delete training by ID",
+            description = "Delete a training by its unique identifier and update the trainer's workload."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Training deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Training not found with the provided ID"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public void deleteTrainingById(HttpServletRequest req, @PathVariable long id) {
+        String encodedJwt = getEncodedJwt(req);
+        TrainingResponse response = trainingOperations.deleteById(id)
+                .orElseThrow(() -> TrainingExceptions.trainingNotFound(id));
+        trainerWorkloadOperations.invoke(response, encodedJwt);
+    }
+
+    private String getEncodedJwt(HttpServletRequest req) {
+        String header = req.getHeader(HttpHeaders.AUTHORIZATION);
+        return header.substring(SecurityConstants.AUTH_TOKEN_PREFIX.length());
     }
 }
