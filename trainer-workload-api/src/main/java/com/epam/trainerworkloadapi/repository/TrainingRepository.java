@@ -15,9 +15,9 @@ public interface TrainingRepository extends JpaRepository<ProvidedTraining, Long
     Optional<ProvidedTraining> findByUserUsernameAndTrainingDateAndTrainingDuration(
             String username, OffsetDateTime trainingDate, long trainingDuration);
 
-    @Query("select pt from ProvidedTraining pt where pt.user.username = :username " +
+    @Query("select pt from ProvidedTraining pt where pt.user.username = :trainerUsername " +
             "and function('YEAR', pt.trainingDate) = :year and function('MONTH', pt.trainingDate) = :month")
-    List<ProvidedTraining> findByUserUsernameAndMonth(@Param("trainerUsername") String username,
+    List<ProvidedTraining> findByUserUsernameAndMonth(@Param("trainerUsername") String trainerUsername,
                                                       @Param("year") int year,
                                                       @Param("month") int month);
 
