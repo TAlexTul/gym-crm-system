@@ -1,170 +1,171 @@
-////package com.epam.gymcrmsystemapi.service.workload;
-////
-////import com.epam.gymcrmsystemapi.controller.TrainingController;
-////import com.epam.gymcrmsystemapi.service.training.TrainingOperations;
-////import org.junit.jupiter.api.BeforeEach;
-////import org.springframework.cloud.client.ServiceInstance;
-////import org.springframework.cloud.client.discovery.DiscoveryClient;
-////import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-////import org.springframework.web.client.RestClient;
-////
-////import static org.mockito.Mockito.mock;
-////import static org.mockito.Mockito.when;
-////
-////public class TrainerWorkloadServiceTest {
-////
-////    private DiscoveryClient discoveryClient;
-////
-////    private ServiceInstance serviceInstance;
-////
-////    @BeforeEach
-////    void setUp() {
-////        discoveryClient = mock(DiscoveryClient.class);
-////        serviceInstance = mock(ServiceInstance.class);
-////
-////        RestClient.Builder restClientBuilder = mock(RestClient.Builder.class);
-////        RestClient restClient = mock(RestClient.class);
-////        when(restClientBuilder.build()).thenReturn(restClient);
-////
-////        mvc = MockMvcBuilders
-////                .standaloneSetup(new TrainingController(trainingOperations, trainerWorkloadOperations, discoveryClient, restClientBuilder))
-////                .build();
-////    }
-////
-////
-//package com.epam.gymcrmsystemapi.service.workload;
-//
-//import com.epam.gymcrmsystemapi.exceptions.TrainerExceptions;
-//import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
-//import com.epam.gymcrmsystemapi.model.training.request.ProvidedTrainingSaveRequest;
-//import com.epam.gymcrmsystemapi.model.training.request.TrainingSaveRequest;
-//import com.epam.gymcrmsystemapi.model.training.response.TrainingResponse;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.mockito.*;
-//import org.springframework.cloud.client.ServiceInstance;
-//import org.springframework.cloud.client.discovery.DiscoveryClient;
-//import org.springframework.http.HttpHeaders;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.web.client.RestClient;
-//import org.springframework.web.server.ResponseStatusException;
-//
-//import java.net.URI;
-//import java.util.List;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//import static org.mockito.Mockito.*;
-//
-//class TrainerWorkloadServiceTest {
-//
-//    @Mock
-//    private DiscoveryClient discoveryClient;
-//    @Mock
-//    private RestClient restClient;
-//    @Mock
-//    private RestClient.RequestSpecification requestSpecification;
-//    @Mock
-//    private RestClient.RequestSpecificationWithBody requestSpecificationWithBody;
-//    @Mock
-//    private RestClient.ResponseSpecification responseSpecification;
-//    @Mock
-//    private ServiceInstance serviceInstance;
-//
-//    @InjectMocks
-//    private TrainerWorkloadService trainerWorkloadService;
-//
-//    @BeforeEach
-//    void setUp() {
-//        MockitoAnnotations.openMocks(this);
-//        when(restClient.post()).thenReturn(requestSpecificationWithBody);
-//        when(restClient.delete()).thenReturn(requestSpecification);
-//        when(requestSpecificationWithBody.uri(any(String.class))).thenReturn(requestSpecificationWithBody);
-//        when(requestSpecificationWithBody.headers(any())).thenReturn(requestSpecificationWithBody);
-//        when(requestSpecificationWithBody.body(any())).thenReturn(requestSpecificationWithBody);
-//        when(requestSpecificationWithBody.retrieve()).thenReturn(responseSpecification);
-//        when(requestSpecification.uri(any(String.class), any())).thenReturn(requestSpecification);
-//        when(requestSpecification.headers(any())).thenReturn(requestSpecification);
-//        when(requestSpecification.retrieve()).thenReturn(responseSpecification);
-//        when(responseSpecification.toBodilessEntity()).thenReturn(null);
-//    }
-//
-//    @Test
-//    void testInvoke_AddTraining_Success() {
-//        // Arrange
-//        TrainingSaveRequest saveRequest = new TrainingSaveRequest("trainer1");
-//        TrainingResponse response = new TrainingResponse(
-//                List.of(new TrainerResponse("trainer1", "John", "Doe", "ACTIVE")),
-//                "2024-12-01", 60
-//        );
-//        String encodedJwt = "mockedJwt";
-//
-//        when(discoveryClient.getInstances(anyString())).thenReturn(List.of(serviceInstance));
-//        when(serviceInstance.getUri()).thenReturn(URI.create("http://mocked-service"));
-//        trainerWorkloadService.trainerWorkloadApiUri = "/add";
-//
-//        // Act
-//        assertDoesNotThrow(() -> trainerWorkloadService.invoke(saveRequest, response, encodedJwt));
-//
-//        // Assert
-//        verify(requestSpecificationWithBody).uri("http://mocked-service/add");
-//        verify(requestSpecificationWithBody).headers(any());
-//        verify(requestSpecificationWithBody).body(any(ProvidedTrainingSaveRequest.class));
-//        verify(responseSpecification).toBodilessEntity();
-//    }
-//
-//    @Test
-//    void testInvoke_AddTraining_TrainerNotFound() {
-//        // Arrange
-//        TrainingSaveRequest saveRequest = new TrainingSaveRequest("nonexistentTrainer");
-//        TrainingResponse response = new TrainingResponse(List.of(), "2024-12-01", 60);
-//        String encodedJwt = "mockedJwt";
-//
-//        // Act & Assert
-//        TrainerExceptions exception = assertThrows(
-//                TrainerExceptions.class,
-//                () -> trainerWorkloadService.invoke(saveRequest, response, encodedJwt)
-//        );
-//        assertTrue(exception.getMessage().contains("trainer not found"));
-//    }
-//
-//    @Test
-//    void testInvoke_DeleteTraining_Success() {
-//        // Arrange
-//        TrainingResponse response = new TrainingResponse(
-//                List.of(new TrainerResponse("trainer1", "John", "Doe", "ACTIVE")),
-//                "2024-12-01", 60
-//        );
-//        String encodedJwt = "mockedJwt";
-//
-//        when(discoveryClient.getInstances(anyString())).thenReturn(List.of(serviceInstance));
-//        when(serviceInstance.getUri()).thenReturn(URI.create("http://mocked-service"));
-//        trainerWorkloadService.trainerWorkloadApiUri = "/delete";
-//
-//        // Act
-//        assertDoesNotThrow(() -> trainerWorkloadService.invoke(response, encodedJwt));
-//
-//        // Assert
-//        verify(requestSpecification).uri(eq("http://mocked-service/delete"), any());
-//        verify(requestSpecification).headers(any());
-//        verify(responseSpecification).toBodilessEntity();
-//    }
-//
-//    @Test
-//    void testInvoke_NoInstancesFound() {
-//        // Arrange
-//        when(discoveryClient.getInstances(anyString())).thenReturn(List.of());
-//        String encodedJwt = "mockedJwt";
-//        TrainingResponse response = new TrainingResponse(
-//                List.of(new TrainerResponse("trainer1", "John", "Doe", "ACTIVE")),
-//                "2024-12-01", 60
-//        );
-//
-//        // Act & Assert
-//        IllegalStateException exception = assertThrows(
-//                IllegalStateException.class,
-//                () -> trainerWorkloadService.invoke(response, encodedJwt)
-//        );
-//        assertTrue(exception.getMessage().contains("No instances available"));
-//    }
-//}
-//
+package com.epam.gymcrmsystemapi.service.workload;
+
+import com.epam.gymcrmsystemapi.model.trainee.Trainee;
+import com.epam.gymcrmsystemapi.model.trainee.response.TraineeResponse;
+import com.epam.gymcrmsystemapi.model.trainer.Trainer;
+import com.epam.gymcrmsystemapi.model.trainer.response.TrainerResponse;
+import com.epam.gymcrmsystemapi.model.trainer.specialization.Specialization;
+import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
+import com.epam.gymcrmsystemapi.model.training.request.ProvidedTrainingDeleteRequest;
+import com.epam.gymcrmsystemapi.model.training.request.ProvidedTrainingSaveRequest;
+import com.epam.gymcrmsystemapi.model.training.request.TrainingSaveRequest;
+import com.epam.gymcrmsystemapi.model.training.response.TrainingResponse;
+import com.epam.gymcrmsystemapi.model.training.type.Type;
+import com.epam.gymcrmsystemapi.model.training.type.response.TrainingTypeResponse;
+import com.epam.gymcrmsystemapi.model.user.User;
+import com.epam.gymcrmsystemapi.model.user.UserStatus;
+import com.epam.gymcrmsystemapi.service.workload.activemq.MessageProducer;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.mockito.Mockito.*;
+
+class TrainerWorkloadServiceTest {
+
+    @Mock
+    private MessageProducer messageProducer;
+
+    @InjectMocks
+    private TrainerWorkloadService trainerWorkloadService;
+
+    String trainingName;
+    OffsetDateTime trainingDate;
+    long trainingDuration;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        trainingName = "Training1";
+        trainingDate = OffsetDateTime.parse("2007-12-03T09:15:30Z");
+        trainingDuration = 30000L;
+    }
+
+    @Test
+    void testInvoke_TrainingSaveRequest_TrainingResponse() {
+        var trainee = getTrainee();
+        var trainer = getTrainer();
+        var traineeUsername = trainee.getUser().getUsername();
+        var trainerUsername = trainer.getUser().getUsername();
+        var trainingType = Type.FUNCTIONAL_TRAINING;
+
+        var request = new TrainingSaveRequest(
+                traineeUsername, trainerUsername, trainingName, trainingType, trainingDate, trainingDuration);
+
+        var response = new TrainingResponse(
+                1L,
+                getTraineeResponses(),
+                getTrainerResponses(),
+                trainingName,
+                List.of(new TrainingTypeResponse(trainingType.ordinal(), trainingType)),
+                trainingDate,
+                trainingDuration
+        );
+
+        var providedRequest = new ProvidedTrainingSaveRequest(
+                trainerUsername,
+                "Jane",
+                "Jenkins",
+                UserStatus.ACTIVE,
+                trainingDate,
+                trainingDuration
+        );
+
+        doNothing().when(messageProducer).processAndSend(providedRequest);
+
+        trainerWorkloadService.invoke(request, response);
+
+        verify(messageProducer, times(1)).processAndSend(providedRequest);
+    }
+
+    @Test
+    void testInvoke_TrainingResponse() {
+        var response = new TrainingResponse(
+                1L,
+                getTraineeResponses(),
+                getTrainerResponses(),
+                trainingName,
+                List.of(),
+                trainingDate,
+                trainingDuration
+        );
+
+        List<String> trainerUsernames = response.trainers().stream()
+                .map(TrainerResponse::username)
+                .toList();
+
+        var request = new ProvidedTrainingDeleteRequest(
+                String.join(",", trainerUsernames),
+                response.trainingDate(),
+                response.trainingDuration()
+        );
+
+        doNothing().when(messageProducer).processAndSend(request);
+
+        trainerWorkloadService.invoke(response);
+
+        verify(messageProducer, times(1)).processAndSend(request);
+    }
+
+
+    private Set<TraineeResponse> getTraineeResponses() {
+        return Stream.of(getTrainee())
+                .map(TraineeResponse::fromTrainee)
+                .collect(Collectors.toSet());
+    }
+
+    private Set<TrainerResponse> getTrainerResponses() {
+        return Stream.of(getTrainer())
+                .map(TrainerResponse::fromTrainer)
+                .collect(Collectors.toSet());
+    }
+
+    private Trainee getTrainee() {
+        var trainee = new Trainee();
+        trainee.setId(1L);
+        trainee.setDateOfBirth(OffsetDateTime.parse("2007-12-03T09:15:30Z"));
+        trainee.setAddress("123 Main St");
+        trainee.setUser(getUserForTrainee());
+        return trainee;
+    }
+
+    private Trainer getTrainer() {
+        var trainer = new Trainer();
+        trainer.setId(1L);
+        trainer.setSpecialization(
+                new Specialization(SpecializationType.PERSONAL_TRAINER, SpecializationType.PERSONAL_TRAINER));
+        trainer.setUser(getUserTrainer());
+        return trainer;
+    }
+
+    private User getUserForTrainee() {
+        var user = new User();
+        user.setId(1L);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setUsername("John.Doe");
+        user.setPassword("aB9dE4fGhJ");
+        user.setStatus(UserStatus.ACTIVE);
+        return user;
+    }
+
+    private User getUserTrainer() {
+        var user = new User();
+        user.setId(2L);
+        user.setFirstName("Jane");
+        user.setLastName("Jenkins");
+        user.setUsername("Jane.Jenkins");
+        user.setPassword("aB9dE4fGhJ");
+        user.setStatus(UserStatus.ACTIVE);
+        return user;
+    }
+}

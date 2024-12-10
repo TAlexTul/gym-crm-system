@@ -1,0 +1,13 @@
+services:
+  activemq:
+    image: webcenter/activemq:latest  # Используем последнюю версию
+    container_name: activemq
+    restart: always
+    ports:
+      - "8161:8161"  # Веб-консоль
+      - "61616:61616" # TCP-порт
+    environment:
+      ACTIVEMQ_ADMIN_LOGIN: admin  # Логин администратора
+      ACTIVEMQ_ADMIN_PASSWORD: admin  # Пароль администратора
+      ACTIVEMQ_MIN_MEMORY: 512
+      ACTIVEMQ_MAX_MEMORY: 1024

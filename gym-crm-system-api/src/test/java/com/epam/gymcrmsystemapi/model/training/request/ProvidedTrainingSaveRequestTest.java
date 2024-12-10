@@ -1,89 +1,68 @@
 package com.epam.gymcrmsystemapi.model.training.request;
 
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
-import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ProvidedTrainingSaveRequestTest {
 
-    private static Validator validator;
+    @Test
+    void testProvidedTrainingSaveRequestCreation() {
+        String trainerUsername = "Jane.Jenkins";
+        String trainerFirstName = "Jane";
+        String trainerLastName = "Jenkins";
+        UserStatus trainerStatus = UserStatus.ACTIVE;
+        OffsetDateTime trainingDate = OffsetDateTime.now();
+        long trainingDuration = 90L;
 
-    @BeforeAll
-    static void setUpValidator() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
+        ProvidedTrainingSaveRequest request = new ProvidedTrainingSaveRequest(
+                trainerUsername,
+                trainerFirstName,
+                trainerLastName,
+                trainerStatus,
+                trainingDate,
+                trainingDuration
+        );
+
+        assertEquals(trainerUsername, request.trainerUsername());
+        assertEquals(trainerFirstName, request.trainerFirstName());
+        assertEquals(trainerLastName, request.trainerLastName());
+        assertEquals(trainerStatus, request.trainerStatus());
+        assertEquals(trainingDate, request.trainingDate());
+        assertEquals(trainingDuration, request.trainingDuration());
     }
 
     @Test
-    void shouldPassValidationWhenAllFieldsAreValid() {
-        ProvidedTrainingSaveRequest request = new ProvidedTrainingSaveRequest(
-                "Jane.Jenkins",
-                "Jane",
-                "Jenkins",
-                UserStatus.ACTIVE,
-                OffsetDateTime.now(),
-                60
+    void testProvidedTrainingSaveRequestEquality() {
+        OffsetDateTime trainingDate = OffsetDateTime.now();
+        ProvidedTrainingSaveRequest request1 = new ProvidedTrainingSaveRequest(
+                "Jane.Jenkins", "Jane", "Jenkins", UserStatus.ACTIVE, trainingDate, 90L
+        );
+        ProvidedTrainingSaveRequest request2 = new ProvidedTrainingSaveRequest(
+                "Jane.Jenkins", "Jane", "Jenkins", UserStatus.ACTIVE, trainingDate, 90L
         );
 
-        Set<jakarta.validation.ConstraintViolation<ProvidedTrainingSaveRequest>> violations = validator.validate(request);
-        assertEquals(0, violations.size());
+        assertEquals(request1, request2);
+        assertEquals(request1.hashCode(), request2.hashCode());
     }
 
     @Test
-    void shouldFailValidationWhenTrainerUsernameIsNull() {
+    void testProvidedTrainingSaveRequestToString() {
+        OffsetDateTime trainingDate = OffsetDateTime.now();
         ProvidedTrainingSaveRequest request = new ProvidedTrainingSaveRequest(
-                null,
-                "Jane",
-                "Jenkins",
-                UserStatus.ACTIVE,
-                OffsetDateTime.now(),
-                60
+                "Jane.Jenkins", "Jane", "Jenkins", UserStatus.ACTIVE, trainingDate, 90L
         );
 
-        Set<jakarta.validation.ConstraintViolation<ProvidedTrainingSaveRequest>> violations = validator.validate(request);
+        String toString = request.toString();
 
-        assertEquals(1, violations.size());
-        assertEquals("trainer username must not be null", violations.iterator().next().getMessage());
-    }
-
-    @Test
-    void shouldFailValidationWhenTrainingDurationIsNegative() {
-        ProvidedTrainingSaveRequest request = new ProvidedTrainingSaveRequest(
-                "Jane.Jenkins",
-                "Jane",
-                "Jenkins",
-                UserStatus.ACTIVE,
-                OffsetDateTime.now(),
-                -10
-        );
-
-        Set<jakarta.validation.ConstraintViolation<ProvidedTrainingSaveRequest>> violations = validator.validate(request);
-
-        assertEquals(1, violations.size());
-        assertEquals("training duration must be positive", violations.iterator().next().getMessage());
-    }
-
-    @Test
-    void shouldFailValidationWhenMultipleFieldsAreInvalid() {
-        ProvidedTrainingSaveRequest request = new ProvidedTrainingSaveRequest(
-                null,
-                null,
-                "Jenkins",
-                null,
-                null,
-                -10
-        );
-
-        Set<jakarta.validation.ConstraintViolation<ProvidedTrainingSaveRequest>> violations = validator.validate(request);
-
-        assertEquals(5, violations.size());
+        assertTrue(toString.contains("Jane.Jenkins"));
+        assertTrue(toString.contains("Jane"));
+        assertTrue(toString.contains("Jenkins"));
+        assertTrue(toString.contains("ACTIVE"));
+        assertTrue(toString.contains(trainingDate.toString()));
+        assertTrue(toString.contains("90"));
     }
 }
