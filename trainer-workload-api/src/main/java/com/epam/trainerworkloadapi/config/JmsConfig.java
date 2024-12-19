@@ -1,5 +1,6 @@
 package com.epam.trainerworkloadapi.config;
 
+import com.epam.trainerworkloadapi.model.training.request.ProvidedTrainingDeleteRequest;
 import com.epam.trainerworkloadapi.model.training.request.ProvidedTrainingSaveRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
@@ -7,7 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class JmsConfig {
@@ -17,8 +19,12 @@ public class JmsConfig {
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
         converter.setObjectMapper(objectMapper);
         converter.setTypeIdPropertyName("content-type");
-        converter.setTypeIdMappings(
-                Collections.singletonMap("providedTrainingSaveRequest", ProvidedTrainingSaveRequest.class));
+
+        Map<String, Class<?>> typeIdMappings = new HashMap<>();
+        typeIdMappings.put("providedTrainingSaveRequest", ProvidedTrainingSaveRequest.class);
+        typeIdMappings.put("providedTrainingDeleteRequest", ProvidedTrainingDeleteRequest.class);
+        converter.setTypeIdMappings(typeIdMappings);
+
         return converter;
     }
 }
