@@ -5,7 +5,16 @@ spring:
     active: local-dev
   jpa:
     open-in-view: false
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
 
 security:
   jwt:
     secret: eitu9aichae7eitee9XiciweishohW3pieshaifasosai5xie9Oomobulohyu8ie
+
+activemq:
+  destination:
+    add: queue.add
+    delete: queue.delete

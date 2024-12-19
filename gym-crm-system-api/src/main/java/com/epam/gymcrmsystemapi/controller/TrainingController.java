@@ -1,7 +1,6 @@
 package com.epam.gymcrmsystemapi.controller;
 
 import com.epam.gymcrmsystemapi.Routes;
-import com.epam.gymcrmsystemapi.config.security.SecurityConstants;
 import com.epam.gymcrmsystemapi.exceptions.TrainingExceptions;
 import com.epam.gymcrmsystemapi.model.training.request.TrainingSaveRequest;
 import com.epam.gymcrmsystemapi.model.training.response.TrainingResponse;
@@ -13,13 +12,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,12 +47,10 @@ public class TrainingController {
             @ApiResponse(responseCode = "201", description = "Training registered successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
-    public ResponseEntity<TrainingResponse> register(HttpServletRequest req,
-                                                     @RequestBody @Valid TrainingSaveRequest request,
+    public ResponseEntity<TrainingResponse> register(@RequestBody @Valid TrainingSaveRequest request,
                                                      UriComponentsBuilder ucb) {
-        String encodedJwt = getEncodedJwt(req);
         TrainingResponse response = trainingOperations.create(request);
-        trainerWorkloadOperations.invoke(request, response, encodedJwt);
+        trainerWorkloadOperations.invoke(request, response);
         return ResponseEntity
                 .created(ucb.path(Routes.TRAININGS + "/{id}").build(response.id()))
                 .body(response);
@@ -116,15 +111,9 @@ public class TrainingController {
             @ApiResponse(responseCode = "404", description = "Training not found with the provided ID"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public void deleteTrainingById(HttpServletRequest req, @PathVariable long id) {
-        String encodedJwt = getEncodedJwt(req);
+    public void deleteTrainingById(@PathVariable long id) {
         TrainingResponse response = trainingOperations.deleteById(id)
                 .orElseThrow(() -> TrainingExceptions.trainingNotFound(id));
-        trainerWorkloadOperations.invoke(response, encodedJwt);
-    }
-
-    private String getEncodedJwt(HttpServletRequest req) {
-        String header = req.getHeader(HttpHeaders.AUTHORIZATION);
-        return header.substring(SecurityConstants.AUTH_TOKEN_PREFIX.length());
+        trainerWorkloadOperations.invoke(response);
     }
 }

@@ -5,8 +5,8 @@ import com.epam.gymcrmsystemapi.model.training.response.TrainingResponse;
 
 public interface TrainerWorkloadOperations {
 
-    void invoke(TrainingSaveRequest request, TrainingResponse response, String encodedJwt);
+    void invoke(TrainingSaveRequest request, TrainingResponse response);
 
-    void invoke(TrainingResponse response, String encodedJwt);
+    void invoke(TrainingResponse response);
 
 }

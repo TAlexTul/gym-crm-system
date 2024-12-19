@@ -5,6 +5,10 @@ spring:
     active: local-dev
   jpa:
     open-in-view: false
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
 
 password:
   strength: 10
@@ -23,13 +27,9 @@ gym-crm-system:
         last-name: admin
         password: qwertyuiop
 
-trainer-workload-api:
-  name: trainer-workload-api
-  uri: /api/v1/training
-
 resilience4j.circuitbreaker:
   instances:
-    add:
+    action:
       registerHealthIndicator: true
       ringBufferSizeInClosedState: 5
       ringBufferSizeInHalfOpenState: 3
@@ -42,15 +42,7 @@ resilience4j.circuitbreaker:
         - org.springframework.web.client.ResourceAccessException
         - org.springframework.web.client.HttpClientErrorException
 
-    delete:
-      registerHealthIndicator: true
-      ringBufferSizeInClosedState: 10
-      ringBufferSizeInHalfOpenState: 5
-      waitDurationInOpenState: 15s
-      failureRateThreshold: 60
-      recordExceptions:
-        - org.springframework.web.client.HttpServerErrorException
-        - java.io.IOException
-        - java.util.concurrent.TimeoutException
-        - org.springframework.web.client.ResourceAccessException
-        - org.springframework.web.client.HttpClientErrorException
+activemq:
+  destination:
+    add: queue.add
+    delete: queue.delete

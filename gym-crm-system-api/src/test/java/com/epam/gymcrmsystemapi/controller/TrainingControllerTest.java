@@ -18,7 +18,6 @@ import com.epam.gymcrmsystemapi.service.training.TrainingOperations;
 import com.epam.gymcrmsystemapi.service.workload.TrainerWorkloadOperations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -40,13 +39,11 @@ public class TrainingControllerTest {
 
     private TrainingOperations trainingOperations;
     private TrainerWorkloadOperations trainerWorkloadOperations;
-    String encodedJwtToken;
 
     @BeforeEach
     void setUp() {
         trainingOperations = mock(TrainingOperations.class);
         trainerWorkloadOperations = mock(TrainerWorkloadOperations.class);
-        encodedJwtToken = "someEncodedJwtToken";
 
         mvc = MockMvcBuilders
                 .standaloneSetup(new TrainingController(trainingOperations, trainerWorkloadOperations))
@@ -73,13 +70,12 @@ public class TrainingControllerTest {
                 300000L);
 
         when(trainingOperations.create(request)).thenReturn(response);
-        doNothing().when(trainerWorkloadOperations).invoke(request, response, encodedJwtToken);
+        doNothing().when(trainerWorkloadOperations).invoke(request, response);
 
         var expectedJson = getExpectedJson();
 
         mvc.perform(post(Routes.TRAININGS)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + encodedJwtToken)
                         .content("""
                                     {
                                       "traineeUsername": "John.Doe",
@@ -97,7 +93,7 @@ public class TrainingControllerTest {
                 .andExpect(content().json(expectedJson));
 
         verify(trainingOperations, only()).create(request);
-        verify(trainerWorkloadOperations, only()).invoke(request, response, encodedJwtToken);
+        verify(trainerWorkloadOperations, only()).invoke(request, response);
     }
 
     @Test
@@ -137,14 +133,13 @@ public class TrainingControllerTest {
                 300000L);
 
         when(trainingOperations.deleteById(id)).thenReturn(Optional.of(response));
-        doNothing().when(trainerWorkloadOperations).invoke(response, encodedJwtToken);
+        doNothing().when(trainerWorkloadOperations).invoke(response);
 
-        mvc.perform(delete(Routes.TRAININGS + "/" + id)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + encodedJwtToken))
+        mvc.perform(delete(Routes.TRAININGS + "/" + id))
                 .andExpect(status().isNoContent());
 
         verify(trainingOperations, only()).deleteById(id);
-        verify(trainerWorkloadOperations, only()).invoke(response, encodedJwtToken);
+        verify(trainerWorkloadOperations, only()).invoke(response);
     }
 
     private String getExpectedJson() {
