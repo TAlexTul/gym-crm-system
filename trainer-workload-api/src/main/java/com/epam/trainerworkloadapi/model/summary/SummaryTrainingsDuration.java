@@ -3,6 +3,7 @@ package com.epam.trainerworkloadapi.model.summary;
 import com.epam.trainerworkloadapi.model.training.ProvidedTraining;
 import com.epam.trainerworkloadapi.model.user.UserStatus;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Document("summaries")
+@CompoundIndex(name = "first_last_name_idx", def = "{'first_name': 1, 'last_name': 1}")
 public class SummaryTrainingsDuration {
 
     @Id
