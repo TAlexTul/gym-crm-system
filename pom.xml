@@ -15,7 +15,6 @@
 
     <modules>
         <module>gym-crm-system-api</module>
-        <module>eureka-server</module>
         <module>trainer-workload-api</module>
     </modules>
 

@@ -1,60 +1,48 @@
 package com.epam.trainerworkloadapi.model.training;
 
-import com.epam.trainerworkloadapi.model.user.User;
-import jakarta.persistence.*;
-
-import java.time.OffsetDateTime;
+import java.time.Month;
+import java.time.Year;
 import java.util.Objects;
 
-@Entity
-@Table(name = "trainings")
 public class ProvidedTraining {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Year year;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private User user;
+    private Month month;
 
-    @Column(name = "training_date", nullable = false)
-    private OffsetDateTime trainingDate;
-
-    @Column(name = "training_duration", nullable = false)
-    private Long trainingDuration;
+    private long trainingDuration;
 
     public ProvidedTraining() {
     }
 
-    public Long getId() {
-        return id;
+    public ProvidedTraining(Year year, Month month,
+                            long trainingDuration) {
+        this.year = year;
+        this.month = month;
+        this.trainingDuration = trainingDuration;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Year getYear() {
+        return year;
     }
 
-    public User getUser() {
-        return user;
+    public void setYear(Year year) {
+        this.year = year;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public Month getMonth() {
+        return month;
     }
 
-    public OffsetDateTime getTrainingDate() {
-        return trainingDate;
+    public void setMonth(Month month) {
+        this.month = month;
     }
 
-    public void setTrainingDate(OffsetDateTime trainingDate) {
-        this.trainingDate = trainingDate;
-    }
-
-    public Long getTrainingDuration() {
+    public long getTrainingDuration() {
         return trainingDuration;
     }
 
-    public void setTrainingDuration(Long trainingDuration) {
+    public void setTrainingDuration(long trainingDuration) {
         this.trainingDuration = trainingDuration;
     }
 
@@ -63,13 +51,13 @@ public class ProvidedTraining {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ProvidedTraining training = (ProvidedTraining) o;
-        return Objects.equals(id, training.id)
-                && Objects.equals(trainingDate, training.trainingDate)
-                && Objects.equals(trainingDuration, training.trainingDuration);
+        return trainingDuration == training.trainingDuration
+                && Objects.equals(year, training.year)
+                && month == training.month;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, trainingDate, trainingDuration);
+        return Objects.hash(year, month, trainingDuration);
     }
 }
