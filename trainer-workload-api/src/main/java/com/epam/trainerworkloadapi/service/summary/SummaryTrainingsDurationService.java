@@ -8,6 +8,8 @@ import com.epam.trainerworkloadapi.model.summary.response.SummaryTrainingsDurati
 import com.epam.trainerworkloadapi.model.training.ProvidedTraining;
 import com.epam.trainerworkloadapi.model.training.request.ProvidedTrainingSaveRequest;
 import com.epam.trainerworkloadapi.repository.SummaryTrainingsDurationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import java.util.Optional;
 @Transactional
 public class SummaryTrainingsDurationService implements SummaryOperations {
 
+    private static final Logger log = LoggerFactory.getLogger(SummaryTrainingsDurationService.class);
+
     private final SummaryTrainingsDurationRepository summaryRepository;
 
     public SummaryTrainingsDurationService(SummaryTrainingsDurationRepository summaryRepository) {
@@ -35,8 +39,12 @@ public class SummaryTrainingsDurationService implements SummaryOperations {
 
         if (stdByUsername.isPresent()) {
             SummaryTrainingsDuration std = stdByUsername.get();
+            log.info("Updated summary trainings duration for trainer '{}' with data '{}'.",
+                    request.trainerUsername(), request);
             return SummaryTrainingsDurationResponse.formSummaryTrainingsDuration(update(request, std));
         } else {
+            log.info("Created summary trainings duration for trainer '{}' with data '{}'.",
+                    request.trainerUsername(), request);
             return SummaryTrainingsDurationResponse.formSummaryTrainingsDuration(save(request));
         }
     }
@@ -49,6 +57,10 @@ public class SummaryTrainingsDurationService implements SummaryOperations {
         for (String trainerUsername : usernames) {
             if (trainerUsername.isBlank()) continue;
             delete(trainerUsername, trainingDate, trainingDuration);
+            log.info(
+                    "Deleted provided trainings in summary trainings duration for trainer '{}' " +
+                            "with training data '{}', training duration '{}'.",
+                    trainerUsernames, trainingDate, trainingDuration);
         }
     }
 
@@ -57,6 +69,7 @@ public class SummaryTrainingsDurationService implements SummaryOperations {
         SummaryTrainingsDuration std = summaryRepository.findByUsername(request.trainerUsername())
                 .orElseThrow(() -> MonthlySummaryTrainingsExceptions.monthlySummaryTrainingsDurationNotFound(
                         request.trainerUsername()));
+        log.info("Get summary trainings duration for trainer '{}'.", request.trainerUsername());
 
         return MonthlySummaryTrainingsResponse.fromSummaryTrainingsDuration(std);
     }
@@ -77,13 +90,15 @@ public class SummaryTrainingsDurationService implements SummaryOperations {
         List<ProvidedTraining> providedTrainings = getProvidedTrainings(request);
         long summaryTrainingsDuration = getSummaryTrainingsDuration(providedTrainings);
 
-        var std = new SummaryTrainingsDuration();
-        std.setFirstName(request.trainerFirstName());
-        std.setLastName(request.trainerLastName());
-        std.setUsername(request.trainerUsername());
-        std.setUserStatus(request.trainerStatus());
-        std.setTrainings(providedTrainings);
-        std.setSummaryTrainingsDuration(summaryTrainingsDuration);
+        var std = SummaryTrainingsDuration.builder()
+                .firstName(request.trainerFirstName())
+                .lastName(request.trainerLastName())
+                .username(request.trainerUsername())
+                .userStatus(request.trainerStatus())
+                .trainings(providedTrainings)
+                .summaryTrainingsDuration(summaryTrainingsDuration)
+                .build();
+
         summaryRepository.save(std);
 
         return std;
