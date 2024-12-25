@@ -3,9 +3,9 @@ package com.epam.trainerworkloadapi.controller;
 import com.epam.trainerworkloadapi.Routes;
 import com.epam.trainerworkloadapi.model.MonthlySummaryTrainingsRequest;
 import com.epam.trainerworkloadapi.model.MonthlySummaryTrainingsResponse;
-import com.epam.trainerworkloadapi.model.training.response.ProvidedTrainingResponse;
+import com.epam.trainerworkloadapi.model.training.ProvidedTraining;
 import com.epam.trainerworkloadapi.model.user.UserStatus;
-import com.epam.trainerworkloadapi.service.TrainingOperations;
+import com.epam.trainerworkloadapi.service.summary.SummaryOperations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Month;
+import java.time.Year;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -25,16 +26,13 @@ class TrainerWorkloadControllerTest {
 
     private MockMvc mvc;
 
-    private TrainingOperations summaryTrainingsOperations;
-
-    private TrainingOperations trainingOperations;
+    private SummaryOperations summaryOperations;
 
     @BeforeEach
     void setUp() {
-        summaryTrainingsOperations = mock(TrainingOperations.class);
-        trainingOperations = mock(TrainingOperations.class);
+        summaryOperations = mock(SummaryOperations.class);
         mvc = MockMvcBuilders
-                .standaloneSetup(new TrainerWorkloadController(summaryTrainingsOperations, trainingOperations))
+                .standaloneSetup(new TrainerWorkloadController(summaryOperations))
                 .build();
     }
 
@@ -53,12 +51,11 @@ class TrainerWorkloadControllerTest {
                 "Jane",
                 "Jenkins",
                 UserStatus.ACTIVE,
-                List.of(new ProvidedTrainingResponse(1L, 2024, Month.JANUARY, 30000L)),
+                List.of(new ProvidedTraining(Year.of(2024), Month.JANUARY, 30000L)),
                 30000L
         );
 
-        when(summaryTrainingsOperations.findSummaryTrainings(request)).thenReturn(response);
-        doNothing().when(trainingOperations).deleteTrainingsByYearMonth(request.yearMonth());
+        when(summaryOperations.getMonthlySummaryTrainingsDuration(request)).thenReturn(response);
 
         var expectedJson = """
                 {
@@ -68,7 +65,6 @@ class TrainerWorkloadControllerTest {
                   "trainerStatus": "ACTIVE",
                   "trainings": [
                     {
-                      "id": 1,
                       "year": 2024,
                       "month": "JANUARY",
                       "trainingDuration": 30000
@@ -93,7 +89,6 @@ class TrainerWorkloadControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().json(expectedJson));
 
-        verify(summaryTrainingsOperations, only()).findSummaryTrainings(request);
-        verify(trainingOperations, only()).deleteTrainingsByYearMonth(request.yearMonth());
+        verify(summaryOperations, only()).getMonthlySummaryTrainingsDuration(request);
     }
 }

@@ -3,11 +3,13 @@ package com.epam.trainerworkloadapi.controller;
 import com.epam.trainerworkloadapi.Routes;
 import com.epam.trainerworkloadapi.model.MonthlySummaryTrainingsRequest;
 import com.epam.trainerworkloadapi.model.MonthlySummaryTrainingsResponse;
-import com.epam.trainerworkloadapi.service.TrainingOperations;
+import com.epam.trainerworkloadapi.service.summary.SummaryOperations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,16 +21,15 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Trainer Workload", description = "APIs for managing trainer workload")
 public class TrainerWorkloadController {
 
-    private final TrainingOperations summaryTrainingsOperations;
-    private final TrainingOperations trainingOperations;
+    private static final Logger log = LoggerFactory.getLogger(TrainerWorkloadController.class);
 
-    public TrainerWorkloadController(TrainingOperations summaryTrainingsOperations,
-                                     TrainingOperations trainingOperations) {
-        this.summaryTrainingsOperations = summaryTrainingsOperations;
-        this.trainingOperations = trainingOperations;
+    private final SummaryOperations summaryOperations;
+
+    public TrainerWorkloadController(SummaryOperations summaryOperations) {
+        this.summaryOperations = summaryOperations;
     }
 
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Get Monthly Summary of Trainings",
             description = "Fetches a summary of training sessions for a specific month and deletes the " +
@@ -50,9 +51,9 @@ public class TrainerWorkloadController {
             description = "Internal server error.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
     )
-    public MonthlySummaryTrainingsResponse getSummaryTrainings(@RequestBody MonthlySummaryTrainingsRequest request) {
-        MonthlySummaryTrainingsResponse response = summaryTrainingsOperations.findSummaryTrainings(request);
-        trainingOperations.deleteTrainingsByYearMonth(request.yearMonth());
-        return response;
+    public MonthlySummaryTrainingsResponse getSummaryTrainingsByYearMonth(
+            @RequestBody MonthlySummaryTrainingsRequest request) {
+        log.info("Post request on '{}' route with data '{}'", Routes.WORKLOAD, request);
+        return summaryOperations.getMonthlySummaryTrainingsDuration(request);
     }
 }

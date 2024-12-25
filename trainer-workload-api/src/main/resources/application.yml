@@ -3,8 +3,6 @@ spring:
     name: trainer-workload-api
   profiles:
     active: local-dev
-  jpa:
-    open-in-view: false
   activemq:
     broker-url: tcp://localhost:61616
     user: admin

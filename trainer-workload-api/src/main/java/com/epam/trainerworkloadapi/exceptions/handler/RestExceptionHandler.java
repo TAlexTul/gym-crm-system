@@ -1,4 +1,4 @@
-package com.epam.trainerworkloadapi.exceptions;
+package com.epam.trainerworkloadapi.exceptions.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;

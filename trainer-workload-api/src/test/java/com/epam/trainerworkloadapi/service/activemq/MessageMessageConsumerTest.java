@@ -2,7 +2,7 @@ package com.epam.trainerworkloadapi.service.activemq;
 
 import com.epam.trainerworkloadapi.model.training.request.ProvidedTrainingDeleteRequest;
 import com.epam.trainerworkloadapi.model.training.request.ProvidedTrainingSaveRequest;
-import com.epam.trainerworkloadapi.service.TrainingOperations;
+import com.epam.trainerworkloadapi.service.summary.SummaryOperations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.verify;
 class MessageMessageConsumerTest {
 
     @Mock
-    private TrainingOperations trainingOperations;
+    private SummaryOperations summaryOperations;
 
     @InjectMocks
     private MessageConsumerService messageConsumerService;
@@ -26,7 +26,7 @@ class MessageMessageConsumerTest {
 
     @Test
     void testReceiveMessage_Add() {
-        ProvidedTrainingSaveRequest request = new ProvidedTrainingSaveRequest(
+        var request = new ProvidedTrainingSaveRequest(
                 "Jane.Jenkins",
                 "Jane",
                 "Jenkins",
@@ -37,12 +37,12 @@ class MessageMessageConsumerTest {
 
         messageConsumerService.receiveMessage(request);
 
-        verify(trainingOperations).create(request);
+        verify(summaryOperations).create(request);
     }
 
     @Test
     void testReceiveMessage_Delete() {
-        ProvidedTrainingDeleteRequest request = new ProvidedTrainingDeleteRequest(
+        var request = new ProvidedTrainingDeleteRequest(
                 "Jane.Jenkins",
                 null,
                 90L
@@ -50,7 +50,7 @@ class MessageMessageConsumerTest {
 
         messageConsumerService.receiveMessage(request);
 
-        verify(trainingOperations).deleteProvidedTrainings(
+        verify(summaryOperations).deleteProvidedTrainings(
                 request.trainerUsernames(),
                 request.trainingDate(),
                 request.trainingDuration()

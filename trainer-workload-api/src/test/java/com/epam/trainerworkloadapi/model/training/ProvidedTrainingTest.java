@@ -1,61 +1,52 @@
 package com.epam.trainerworkloadapi.model.training;
 
-import com.epam.trainerworkloadapi.model.user.User;
 import org.junit.jupiter.api.Test;
 
-import java.time.OffsetDateTime;
+import java.time.Month;
+import java.time.Year;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProvidedTrainingTest {
 
     @Test
-    void shouldSetAndGetFieldsCorrectly() {
-        ProvidedTraining training = new ProvidedTraining();
-        User user = new User();
-        OffsetDateTime now = OffsetDateTime.now();
-        long duration = 60L;
+    void testProvidedTrainingConstructorAndGetters() {
+        Year year = Year.of(2024);
+        Month month = Month.JANUARY;
+        long duration = 60;
 
-        training.setId(1L);
-        training.setUser(user);
-        training.setTrainingDate(now);
-        training.setTrainingDuration(duration);
+        ProvidedTraining training = new ProvidedTraining(year, month, duration);
 
-        assertEquals(1L, training.getId());
-        assertEquals(user, training.getUser());
-        assertEquals(now, training.getTrainingDate());
+        assertEquals(year, training.getYear());
+        assertEquals(month, training.getMonth());
         assertEquals(duration, training.getTrainingDuration());
     }
 
     @Test
-    void equalsAndHashCodeShouldWorkCorrectly() {
-        OffsetDateTime now = OffsetDateTime.now();
+    void testSetters() {
+        ProvidedTraining training = new ProvidedTraining();
+        Year year = Year.of(2024);
+        Month month = Month.FEBRUARY;
+        long duration = 90;
 
-        ProvidedTraining training1 = new ProvidedTraining();
-        training1.setId(1L);
-        training1.setTrainingDate(now);
-        training1.setTrainingDuration(60L);
+        training.setYear(year);
+        training.setMonth(month);
+        training.setTrainingDuration(duration);
 
-        ProvidedTraining training2 = new ProvidedTraining();
-        training2.setId(1L);
-        training2.setTrainingDate(now);
-        training2.setTrainingDuration(60L);
-
-        ProvidedTraining training3 = new ProvidedTraining();
-        training3.setId(2L);
-        training3.setTrainingDate(now);
-        training3.setTrainingDuration(30L);
-
-        assertEquals(training1, training2);
-        assertNotEquals(training1, training3);
-
-        assertEquals(training1.hashCode(), training2.hashCode());
-        assertNotEquals(training1.hashCode(), training3.hashCode());
+        assertEquals(year, training.getYear());
+        assertEquals(month, training.getMonth());
+        assertEquals(duration, training.getTrainingDuration());
     }
 
     @Test
-    void shouldHaveDefaultConstructor() {
-        ProvidedTraining training = new ProvidedTraining();
-        assertNotNull(training);
+    void testEqualsAndHashCode() {
+        ProvidedTraining training1 = new ProvidedTraining(Year.of(2024), Month.MARCH, 120);
+        ProvidedTraining training2 = new ProvidedTraining(Year.of(2024), Month.MARCH, 120);
+        ProvidedTraining training3 = new ProvidedTraining(Year.of(2025), Month.APRIL, 150);
+
+        assertEquals(training1, training2);
+        assertEquals(training1.hashCode(), training2.hashCode());
+        assertNotEquals(training1, training3);
+        assertNotEquals(training1.hashCode(), training3.hashCode());
     }
 }

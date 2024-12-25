@@ -1,4 +1,4 @@
-package com.epam.trainerworkloadapi.exceptions;
+package com.epam.trainerworkloadapi.exceptions.handler;
 
 import java.util.Date;
 

@@ -1,13 +1,29 @@
 services:
   activemq:
-    image: webcenter/activemq:latest  # Используем последнюю версию
+    image: webcenter/activemq:latest
     container_name: activemq
     restart: always
     ports:
-      - "8161:8161"  # Веб-консоль
-      - "61616:61616" # TCP-порт
+      - "8161:8161"
+      - "61616:61616"
     environment:
-      ACTIVEMQ_ADMIN_LOGIN: admin  # Логин администратора
-      ACTIVEMQ_ADMIN_PASSWORD: admin  # Пароль администратора
+      ACTIVEMQ_ADMIN_LOGIN: admin
+      ACTIVEMQ_ADMIN_PASSWORD: admin
       ACTIVEMQ_MIN_MEMORY: 512
       ACTIVEMQ_MAX_MEMORY: 1024
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
+    driver: local

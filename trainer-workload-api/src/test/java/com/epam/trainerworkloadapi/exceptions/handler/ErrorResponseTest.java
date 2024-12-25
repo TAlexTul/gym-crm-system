@@ -1,5 +1,6 @@
-package com.epam.trainerworkloadapi.exceptions;
+package com.epam.trainerworkloadapi.exceptions.handler;
 
+import com.epam.trainerworkloadapi.exceptions.handler.ErrorResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;

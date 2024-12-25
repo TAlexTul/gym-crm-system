@@ -1,5 +1,7 @@
-package com.epam.trainerworkloadapi.exceptions;
+package com.epam.trainerworkloadapi.exceptions.handler;
 
+import com.epam.trainerworkloadapi.exceptions.handler.ErrorResponse;
+import com.epam.trainerworkloadapi.exceptions.handler.RestExceptionHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;

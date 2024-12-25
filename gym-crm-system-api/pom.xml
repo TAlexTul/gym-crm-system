@@ -97,7 +97,6 @@
             <artifactId>resilience4j-spring-boot2</artifactId>
             <version>${resilience4j.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-activemq</artifactId>
