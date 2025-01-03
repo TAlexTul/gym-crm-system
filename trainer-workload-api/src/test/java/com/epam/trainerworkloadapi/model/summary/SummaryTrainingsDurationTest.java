@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Month;
 import java.time.Year;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,10 +15,10 @@ class SummaryTrainingsDurationTest {
 
     @Test
     void testConstructorAndGetters() {
-        var id = "1";
-        var username = "john_doe";
-        var firstName = "John";
-        var lastName = "Doe";
+        var id = UUID.randomUUID().toString();
+        var username = "Jane.Jenkins";
+        var firstName = "Jane";
+        var lastName = "Jenkins";
         var status = UserStatus.ACTIVE;
         var trainings = List.of(
                 new ProvidedTraining(Year.of(2024), Month.JANUARY, 60)
@@ -40,10 +41,10 @@ class SummaryTrainingsDurationTest {
     @Test
     void testSetters() {
         var summary = new SummaryTrainingsDuration();
-        var id = "2";
-        var username = "jane_doe";
+        var id = UUID.randomUUID().toString();
+        var username = "Jane.Jenkins";
         var firstName = "Jane";
-        var lastName = "Doe";
+        var lastName = "Jenkins";
         var status = UserStatus.ACTIVE;
         var trainings = List.of(
                 new ProvidedTraining(Year.of(2023), Month.DECEMBER, 45)
@@ -69,23 +70,25 @@ class SummaryTrainingsDurationTest {
 
     @Test
     void testEqualsAndHashCode() {
+        var id = UUID.randomUUID().toString();
+        var anotherId = UUID.randomUUID().toString();
         var summary1 = new SummaryTrainingsDuration(
-                "1", "john_doe", "John", "Doe", UserStatus.ACTIVE,
+                id, "Jane.Jenkins", "Jane", "Jenkins", UserStatus.ACTIVE,
                 List.of(new ProvidedTraining(Year.of(2024), Month.JANUARY, 60)), 60L
         );
         var summary2 = new SummaryTrainingsDuration(
-                "1", "john_doe", "John", "Doe", UserStatus.ACTIVE,
+                id, "Jane.Jenkins", "Jane", "Jenkins", UserStatus.ACTIVE,
                 List.of(new ProvidedTraining(Year.of(2024), Month.JANUARY, 60)), 60L
         );
         var summary3 = new SummaryTrainingsDuration(
-                "2", "jane_doe", "Jane", "Doe", UserStatus.ACTIVE,
+                anotherId, "Jane.Doe", "Jane", "Doe", UserStatus.ACTIVE,
                 List.of(new ProvidedTraining(Year.of(2023), Month.DECEMBER, 45)), 45L
         );
 
-        assertEquals(summary1, summary2); // Objects are equal
-        assertEquals(summary1.hashCode(), summary2.hashCode()); // Hash codes are equal
-        assertNotEquals(summary1, summary3); // Objects are not equal
-        assertNotEquals(summary1.hashCode(), summary3.hashCode()); // Hash codes are not equal
+        assertEquals(summary1, summary2);
+        assertEquals(summary1.hashCode(), summary2.hashCode());
+        assertNotEquals(summary1, summary3);
+        assertNotEquals(summary1.hashCode(), summary3.hashCode());
     }
 
     @Test

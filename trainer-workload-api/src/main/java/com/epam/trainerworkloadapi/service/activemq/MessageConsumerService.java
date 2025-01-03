@@ -1,6 +1,5 @@
 package com.epam.trainerworkloadapi.service.activemq;
 
-import com.epam.trainerworkloadapi.Routes;
 import com.epam.trainerworkloadapi.model.training.request.ProvidedTrainingDeleteRequest;
 import com.epam.trainerworkloadapi.model.training.request.ProvidedTrainingSaveRequest;
 import com.epam.trainerworkloadapi.service.summary.SummaryOperations;

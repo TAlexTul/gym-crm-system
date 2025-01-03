@@ -8,13 +8,13 @@ import java.util.List;
 
 public record TraineeChangeTrainersSetRequest(
 
-        @NotBlank(message = "trainee user names must not be blank")
+        @NotBlank(message = "trainee user name must not be blank")
         String traineeUsername,
 
         @Valid
         @NotNull(message = "trainer`s user names list must not be null")
         List<
-                @NotBlank(message = "trainer`s user name must not be blank")
+                @NotBlank(message = "trainer`s user names must not be blank")
                         String> trainerUsernames
 
 ) {

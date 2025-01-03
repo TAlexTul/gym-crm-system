@@ -75,7 +75,7 @@ class TrainerServiceTest {
 
         assertNotNull(response);
         assertEquals(trainer.getUser().getId(), response.id());
-        assertEquals(trainer.getUser().getUsername(), response.userName());
+        assertEquals(trainer.getUser().getUsername(), response.username());
         assertEquals(trainer.getUser().getPassword(), response.password());
         verify(userOperations, only()).save(firstName, lastName, KnownAuthority.ROLE_TRAINER);
         verify(specializationRepository, only()).findById(request.specializationType());

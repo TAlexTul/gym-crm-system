@@ -1,0 +1,16 @@
+spring:
+  config:
+    import: optional:file:.env-test[.properties]
+  rsocket:
+    server:
+      port: ${SPRING_SERVER_PORT_WORKLOAD}
+
+host: http://localhost:8081
+db-name: test_db
+
+custom:
+  health:
+    db-response-time:
+      enabled: true
+    api:
+      enabled: true

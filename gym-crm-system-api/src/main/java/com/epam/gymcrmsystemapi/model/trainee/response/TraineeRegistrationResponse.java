@@ -3,7 +3,7 @@ package com.epam.gymcrmsystemapi.model.trainee.response;
 import com.epam.gymcrmsystemapi.model.trainee.Trainee;
 
 public record TraineeRegistrationResponse(Long id,
-                                          String userName,
+                                          String username,
                                           String password) {
 
     public static TraineeRegistrationResponse fromTrainee(Trainee trainee) {

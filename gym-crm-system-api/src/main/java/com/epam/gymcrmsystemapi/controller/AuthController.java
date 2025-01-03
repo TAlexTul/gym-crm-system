@@ -3,7 +3,6 @@ package com.epam.gymcrmsystemapi.controller;
 import com.epam.gymcrmsystemapi.Routes;
 import com.epam.gymcrmsystemapi.exceptions.auth.AuthorityExceptions;
 import com.epam.gymcrmsystemapi.exceptions.auth.InvalidRefreshTokenException;
-import com.epam.gymcrmsystemapi.exceptions.handler.ErrorResponse;
 import com.epam.gymcrmsystemapi.model.auth.CustomUserDetails;
 import com.epam.gymcrmsystemapi.model.auth.request.RefreshTokenRequest;
 import com.epam.gymcrmsystemapi.model.auth.request.SignInRequest;
@@ -52,10 +51,8 @@ public class AuthController {
                     @ApiResponse(
                             responseCode = "401",
                             description = "Unauthorized, invalid credentials provided",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-                    )
-            }
-    )
+                            content = @Content)
+    })
     public AccessTokenResponse login(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return authOperations.getToken(userDetails);
     }
@@ -65,16 +62,13 @@ public class AuthController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "Access Token Refresh", description = "Method for refreshing an access token using a refresh token")
+    @Operation(summary = "Access Token Refresh",
+            description = "Method for refreshing an access token using a refresh token")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Token successfully updated",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = AccessTokenResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Bad request",
-                    content = @Content),
             @ApiResponse(responseCode = "401", description = "Invalid refresh token",
-                    content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
                     content = @Content)
     })
     public AccessTokenResponse refresh(@RequestBody @Valid RefreshTokenRequest request) {
@@ -87,14 +81,13 @@ public class AuthController {
 
     @PostMapping(value = "/invalidate", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Invalidate of refresh token", description = "Method for invalidating the current user's refresh token")
+    @Operation(summary = "Invalidate of refresh token",
+            description = "Method for invalidating the current user's refresh token")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Token successfully cancelled"),
             @ApiResponse(responseCode = "400", description = "Bad request",
                     content = @Content),
             @ApiResponse(responseCode = "401", description = "Invalid refresh token",
-                    content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
                     content = @Content)
     })
     public void invalidate(@RequestBody @Valid RefreshTokenRequest request,

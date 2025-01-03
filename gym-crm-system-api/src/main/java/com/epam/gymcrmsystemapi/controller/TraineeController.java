@@ -93,6 +93,7 @@ public class TraineeController {
             @ApiResponse(responseCode = "200", description = "Trainee information updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = TraineeResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TraineeResponse mergeCurrentTrainee(@AuthenticationPrincipal String username,
@@ -123,7 +124,7 @@ public class TraineeController {
             @ApiResponse(responseCode = "200", description = "Trainees retrieved successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "404", description = "No trainees found")
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required")
     })
     public Page<TraineeResponse> listTrainees(@Parameter(hidden = true) Pageable pageable) {
         return traineeOperations.list(pageable);
@@ -138,6 +139,7 @@ public class TraineeController {
             @ApiResponse(responseCode = "200", description = "Trainee found",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = TraineeResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TraineeResponse getTraineeById(@PathVariable long id) {
@@ -154,6 +156,8 @@ public class TraineeController {
             @ApiResponse(responseCode = "200", description = "Trainee updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = TraineeResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TraineeResponse mergeTraineeById(@PathVariable long id,
@@ -172,6 +176,8 @@ public class TraineeController {
             @ApiResponse(responseCode = "200", description = "Trainee status updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = TraineeResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TraineeResponse changeTraineeStatusById(@PathVariable long id,
@@ -190,6 +196,9 @@ public class TraineeController {
             @ApiResponse(responseCode = "200", description = "Trainee status updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = TraineeResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TraineeResponse changeTraineeStatusByUsername(@RequestParam String username,
@@ -207,7 +216,8 @@ public class TraineeController {
             @ApiResponse(responseCode = "200", description = "Trainee's set of trainers updated successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = TrainerResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid request data")
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required")
     })
     public List<TrainerResponse> changeTrainersSet(@RequestBody @Valid TraineeChangeTrainersSetRequest request) {
         return traineeOperations.changeTraineeSetOfTrainers(request);
@@ -218,6 +228,7 @@ public class TraineeController {
     @Operation(summary = "Delete trainee by ID", description = "Delete a trainee's account by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Trainee deleted successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public void deleteTraineeById(@PathVariable long id) {

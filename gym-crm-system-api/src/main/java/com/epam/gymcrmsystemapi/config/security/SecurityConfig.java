@@ -101,7 +101,7 @@ public class SecurityConfig {
                                 //allow trainee registration and refresh, ignore authorization filters on login
                                 .requestMatchers(HttpMethod.POST, Routes.TRAINEES, Routes.TOKEN + "/refresh").permitAll()
                                 // allow trainer registration and refresh, ignore authorization filters on login
-                                .requestMatchers(HttpMethod.POST, Routes.TRAINERS, Routes.TOKEN + "/refresh").permitAll()
+                                .requestMatchers(HttpMethod.POST, Routes.TRAINERS).permitAll()
                                 // admin can manage login data by id
                                 .requestMatchers(Routes.LOGIN + "/{id:\\d+}/**").hasRole("ADMIN")
                                 // admin can manage trainee by id
