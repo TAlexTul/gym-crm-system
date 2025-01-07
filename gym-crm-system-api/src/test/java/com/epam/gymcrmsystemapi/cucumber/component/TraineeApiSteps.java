@@ -9,6 +9,7 @@ import com.epam.gymcrmsystemapi.model.trainer.request.TrainerSaveRequest;
 import com.epam.gymcrmsystemapi.model.trainer.specialization.SpecializationType;
 import com.epam.gymcrmsystemapi.model.user.UserStatus;
 import com.epam.gymcrmsystemapi.model.user.request.ChangeUserStatusRequest;
+import io.cucumber.java.AfterStep;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -126,7 +127,7 @@ public class TraineeApiSteps {
     @When("I send a PATCH request to trainee endpoint with username {string}, " +
             "first name {string}, last name {string}, status {string}")
     public void iSendAPatchRequestToTraineeByIdWithLastName(String username, String firstName,
-                                                     String lastName, String status) {
+                                                            String lastName, String status) {
         httpHeaders = getHttpHeaders();
         response = mergeTraineeMergeRequest(
                 httpHeaders, username, firstName, lastName, status, Routes.TRAINEES + "/" + id);
@@ -135,7 +136,7 @@ public class TraineeApiSteps {
     @When("I send a PATCH request to trainee endpoint by username with username {string}, " +
             "first name {string}, last name {string}, status {string}")
     public void iSendAPatchRequestToTraineeByUsernameWithLastName(String username, String firstName,
-                                                           String lastName, String status) {
+                                                                  String lastName, String status) {
         httpHeaders = getHttpHeaders();
         response = mergeTraineeMergeRequest(
                 httpHeaders, username, firstName, lastName, status, Routes.TRAINEES + "/account");

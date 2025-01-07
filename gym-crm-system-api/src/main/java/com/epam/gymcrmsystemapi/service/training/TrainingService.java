@@ -118,8 +118,8 @@ public class TrainingService implements TrainingOperations {
         return Specification
                 .where(traineeUserNameLike(traineeUsername))
                 .and(trainerUserNameLike(trainerUsername))
-                .and(fromDateLike(fromDate))
-                .and(toDateLike(toDate))
+                .and(trainingStartDateAfterOrEqualTo(fromDate))
+                .and(trainingEndDateBeforeOrEqualTo(toDate))
                 .and(trainingTypeLike(trainingType));
     }
 
@@ -141,13 +141,13 @@ public class TrainingService implements TrainingOperations {
         };
     }
 
-    private Specification<Training> fromDateLike(OffsetDateTime fromDate) {
+    private Specification<Training> trainingStartDateAfterOrEqualTo(OffsetDateTime fromDate) {
         return (root, query, criteriaBuilder) ->
                 fromDate == null ? criteriaBuilder.conjunction()
                         : criteriaBuilder.greaterThanOrEqualTo(root.get("trainingDate"), fromDate);
     }
 
-    private Specification<Training> toDateLike(OffsetDateTime toDate) {
+    private Specification<Training> trainingEndDateBeforeOrEqualTo(OffsetDateTime toDate) {
         return (root, query, criteriaBuilder) -> {
             if (toDate == null) {
                 return criteriaBuilder.conjunction();
