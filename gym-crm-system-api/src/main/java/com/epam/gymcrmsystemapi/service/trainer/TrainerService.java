@@ -94,8 +94,10 @@ public class TrainerService implements TrainerOperations {
 
     @Override
     public TrainerResponse changeStatusById(long id, UserStatus status) {
-        userOperations.changeStatusById(id, status);
-        return TrainerResponse.fromTrainer(getTrainer(id));
+        Trainer trainer = getTrainer(id);
+        var userId = trainer.getUser().getId();
+        userOperations.changeStatusById(userId, status);
+        return TrainerResponse.fromTrainer(trainer);
     }
 
     @Override

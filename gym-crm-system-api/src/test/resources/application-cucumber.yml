@@ -1,0 +1,21 @@
+spring:
+  config:
+    import: optional:file:.env-test[.properties]
+  rsocket:
+    server:
+      port: ${SPRING_SERVER_PORT_WORKLOAD}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${SPRING_DATASOURCE_HOST:localhost}:5433/${db-name}
+    username: postgres
+    password: admin
+
+host: http://localhost:8081
+db-name: gym
+
+custom:
+  health:
+    db-response-time:
+      enabled: true
+    api:
+      enabled: true

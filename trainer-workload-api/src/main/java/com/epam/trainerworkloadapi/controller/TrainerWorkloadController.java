@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -29,7 +30,7 @@ public class TrainerWorkloadController {
         this.summaryOperations = summaryOperations;
     }
 
-    @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Get Monthly Summary of Trainings",
             description = "Fetches a summary of training sessions for a specific month and deletes the " +
@@ -47,12 +48,17 @@ public class TrainerWorkloadController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
     )
     @ApiResponse(
+            responseCode = "404",
+            description = "Monthly summary trainings duration with user name not found.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+    )
+    @ApiResponse(
             responseCode = "500",
             description = "Internal server error.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
     )
     public MonthlySummaryTrainingsResponse getSummaryTrainingsByYearMonth(
-            @RequestBody MonthlySummaryTrainingsRequest request) {
+            @RequestBody @Valid MonthlySummaryTrainingsRequest request) {
         log.info("Post request on '{}' route with data '{}'", Routes.WORKLOAD, request);
         return summaryOperations.getMonthlySummaryTrainingsDuration(request);
     }

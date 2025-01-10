@@ -68,7 +68,8 @@ public class TrainerController {
     @PageableAsQueryParam
     @Operation(summary = "List all trainers", description = "Retrieve a paginated list of all trainers")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of trainers retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "List of trainers retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required")
     })
     public Page<TrainerResponse> listTrainers(@Parameter(hidden = true) Pageable pageable) {
         return trainerOperations.list(pageable);
@@ -82,7 +83,8 @@ public class TrainerController {
             description = "Retrieve a list of trainers not assigned to a trainee")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "List of unassigned trainers retrieved successfully")
+                    description = "List of unassigned trainers retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required")
     })
     public List<TrainerResponse> listTrainersNotAssignedByTraineeUsername(@RequestParam String username) {
         return trainerOperations.listOfTrainersNotAssignedByTraineeUsername(username);
@@ -111,7 +113,8 @@ public class TrainerController {
             description = "Update details of the currently authenticated trainer")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data")
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TrainerResponse mergeCurrentTrainer(@AuthenticationPrincipal String username,
                                                @RequestBody @Valid TrainerMergeRequest request) {
@@ -140,6 +143,7 @@ public class TrainerController {
     @Operation(summary = "Get trainer by ID", description = "Retrieve details of a trainer by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
     public TrainerResponse getTrainerById(@PathVariable long id) {
@@ -154,7 +158,9 @@ public class TrainerController {
     @Operation(summary = "Update trainer by ID", description = "Update details of a trainer by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data")
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
+            @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
     public TrainerResponse mergeTrainerById(@PathVariable long id,
                                             @RequestBody @Valid TrainerMergeRequest request) {
@@ -170,6 +176,8 @@ public class TrainerController {
             description = "Update the status of a trainer by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer's status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
     public TrainerResponse changeTrainerStatusById(@PathVariable long id,
@@ -186,6 +194,8 @@ public class TrainerController {
             description = "Update the status of a trainer by their username")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer's status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
     public TrainerResponse changeTrainerStatusByUsername(@RequestParam String username,
@@ -198,7 +208,7 @@ public class TrainerController {
     @Operation(summary = "Delete trainer by ID", description = "Delete a trainer's account by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Trainer deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Trainer not found")
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required")
     })
     public void deleteTrainerById(@PathVariable long id) {
         trainerOperations.deleteById(id);

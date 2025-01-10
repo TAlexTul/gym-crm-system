@@ -24,6 +24,21 @@ services:
     volumes:
       - mongodb_data:/data/db
 
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: gym
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   mongodb_data:
+    driver: local
+  postgres_data:
     driver: local

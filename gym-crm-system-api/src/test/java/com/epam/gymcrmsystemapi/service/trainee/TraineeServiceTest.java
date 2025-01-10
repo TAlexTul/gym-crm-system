@@ -79,7 +79,7 @@ class TraineeServiceTest {
 
         assertNotNull(response);
         assertEquals(trainee.getUser().getId(), response.id());
-        assertEquals(trainee.getUser().getUsername(), response.userName());
+        assertEquals(trainee.getUser().getUsername(), response.username());
         assertEquals(trainee.getUser().getPassword(), response.password());
         verify(userOperations, only()).save(firstName, lastName, KnownAuthority.ROLE_TRAINEE);
         verify(traineeRepository, only()).save(any(Trainee.class));

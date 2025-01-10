@@ -1,7 +1,5 @@
 package com.epam.trainerworkloadapi.exceptions.handler;
 
-import com.epam.trainerworkloadapi.exceptions.handler.ErrorResponse;
-import com.epam.trainerworkloadapi.exceptions.handler.RestExceptionHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -34,13 +32,12 @@ class RestExceptionHandlerTest {
 
         assertEquals(HttpStatus.METHOD_NOT_ALLOWED.value(), response.status());
         assertEquals("/some-uri", response.path());
-        assertEquals("Request method 'GET' is not supported", response.error()); // Убедитесь, что сообщение соответствует ожиданиям
+        assertEquals("Request method 'GET' is not supported", response.error());
         assertNotNull(response.timestamp());
     }
 
     @Test
     void handleValidationException() {
-        // Создаем мок исключения
         MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
         List<FieldError> fieldErrors = List.of(
                 new FieldError("objectName", "fieldName", "Invalid value")

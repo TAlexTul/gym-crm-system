@@ -45,7 +45,8 @@ public class TrainingController {
             description = "Create a new training and return the training response")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Training registered successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data")
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
     })
     public ResponseEntity<TrainingResponse> register(@RequestBody @Valid TrainingSaveRequest request,
                                                      UriComponentsBuilder ucb) {
@@ -60,7 +61,8 @@ public class TrainingController {
     @PageableAsQueryParam
     @Operation(summary = "List all trainings", description = "Retrieve a paginated list of all trainings")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of trainings retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "List of trainings retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
     })
     public Page<TrainingResponse> listTrainings(@Parameter(hidden = true) Pageable pageable) {
         return trainingOperations.list(pageable);
@@ -75,7 +77,7 @@ public class TrainingController {
             description = "Retrieve a paginated list of trainings based on filter criteria")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Filtered list of trainings retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No trainings found matching the criteria")
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required")
     })
     public Page<TrainingResponse> filterBy(
             @RequestParam(required = false) String traineeUsername,
@@ -94,6 +96,7 @@ public class TrainingController {
     @Operation(summary = "Get training by ID", description = "Retrieve a training by its unique identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Training retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "Training not found")
     })
     public TrainingResponse getTrainingById(@PathVariable long id) {
@@ -108,8 +111,7 @@ public class TrainingController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Training deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Training not found with the provided ID"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required")
     })
     public void deleteTrainingById(@PathVariable long id) {
         TrainingResponse response = trainingOperations.deleteById(id)

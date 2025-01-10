@@ -34,6 +34,7 @@ public class LoginDataController {
             description = "Update the login data of a user by their ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User login data updated successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public void changeUserLoginData(@PathVariable long id,

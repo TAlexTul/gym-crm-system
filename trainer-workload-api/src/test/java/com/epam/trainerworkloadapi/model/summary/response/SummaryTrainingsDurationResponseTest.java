@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Month;
 import java.time.Year;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,10 +17,10 @@ class SummaryTrainingsDurationResponseTest {
     @Test
     void testFormSummaryTrainingsDuration() {
         var summary = new SummaryTrainingsDuration(
-                "1",
-                "john_doe",
-                "John",
-                "Doe",
+                UUID.randomUUID().toString(),
+                "Jane.Jenkins",
+                "Jane",
+                "Jenkins",
                 UserStatus.ACTIVE,
                 List.of(new ProvidedTraining(Year.of(2024), Month.JANUARY, 60)),
                 60L
@@ -40,10 +41,10 @@ class SummaryTrainingsDurationResponseTest {
 
     @Test
     void testResponseFields() {
-        var id = "2";
-        var username = "jane_doe";
+        var id = UUID.randomUUID().toString();
+        var username = "Jane.Jenkins";
         var firstName = "Jane";
-        var lastName = "Doe";
+        var lastName = "Jenkins";
         var status = UserStatus.ACTIVE;
         var trainings = List.of(
                 new ProvidedTraining(Year.of(2023), Month.DECEMBER, 45)
@@ -72,10 +73,10 @@ class SummaryTrainingsDurationResponseTest {
     @Test
     void testEmptyTrainingsList() {
         var summary = new SummaryTrainingsDuration(
-                "3",
-                "no_trainings",
-                "No",
-                "Trainings",
+                UUID.randomUUID().toString(),
+                "Jane.Jenkins",
+                "Jane",
+                "Jenkins",
                 UserStatus.ACTIVE,
                 List.of(),
                 0L

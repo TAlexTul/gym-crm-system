@@ -28,7 +28,8 @@ public class TrainingTypeController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get all training types", description = "Retrieve a list of all training types available")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of training types retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "List of training types retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: authentication is required")
     })
     public List<TrainingTypeResponse> getTrainingTypes() {
         return trainingTypeOperations.list();

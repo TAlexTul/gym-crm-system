@@ -1,0 +1,13 @@
+spring:
+  config:
+    import: optional:file:.env-test[.properties]
+  rsocket:
+    server:
+      port: ${SPRING_SERVER_PORT_WORKLOAD}
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: trainings_db
+
+host: http://localhost:8081

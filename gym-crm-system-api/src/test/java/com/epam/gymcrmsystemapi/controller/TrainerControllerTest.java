@@ -49,7 +49,7 @@ public class TrainerControllerTest {
         var expectedJson = """
                 {
                   "id": %s,
-                  "userName": "Jane.Jenkins",
+                  "username": "Jane.Jenkins",
                   "password": "aB9dE4fGhJ"
                 }
                 """.formatted(id);

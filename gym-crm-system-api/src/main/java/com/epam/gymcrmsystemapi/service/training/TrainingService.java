@@ -118,8 +118,8 @@ public class TrainingService implements TrainingOperations {
         return Specification
                 .where(traineeUserNameLike(traineeUsername))
                 .and(trainerUserNameLike(trainerUsername))
-                .and(fromDateLike(fromDate))
-                .and(toDateLike(toDate))
+                .and(trainingStartDateAfterOrEqualTo(fromDate))
+                .and(trainingEndDateBeforeOrEqualTo(toDate))
                 .and(trainingTypeLike(trainingType));
     }
 
@@ -128,7 +128,7 @@ public class TrainingService implements TrainingOperations {
             if (traineeUsername == null) return criteriaBuilder.conjunction();
             Join<Training, Trainee> traineeJoin = root.join("trainees");
             Join<Trainee, User> userJoin = traineeJoin.join("user");
-            return criteriaBuilder.like(userJoin.get("firstName"), "%" + traineeUsername + "%");
+            return criteriaBuilder.like(userJoin.get("username"), "%" + traineeUsername + "%");
         };
     }
 
@@ -137,17 +137,17 @@ public class TrainingService implements TrainingOperations {
             if (trainerUsername == null) return criteriaBuilder.conjunction();
             Join<Training, Trainer> trainerJoin = root.join("trainers");
             Join<Trainer, User> userJoin = trainerJoin.join("user");
-            return criteriaBuilder.like(userJoin.get("firstName"), "%" + trainerUsername + "%");
+            return criteriaBuilder.like(userJoin.get("username"), "%" + trainerUsername + "%");
         };
     }
 
-    private Specification<Training> fromDateLike(OffsetDateTime fromDate) {
+    private Specification<Training> trainingStartDateAfterOrEqualTo(OffsetDateTime fromDate) {
         return (root, query, criteriaBuilder) ->
                 fromDate == null ? criteriaBuilder.conjunction()
-                        : criteriaBuilder.lessThanOrEqualTo(root.get("trainingDate"), fromDate);
+                        : criteriaBuilder.greaterThanOrEqualTo(root.get("trainingDate"), fromDate);
     }
 
-    private Specification<Training> toDateLike(OffsetDateTime toDate) {
+    private Specification<Training> trainingEndDateBeforeOrEqualTo(OffsetDateTime toDate) {
         return (root, query, criteriaBuilder) -> {
             if (toDate == null) {
                 return criteriaBuilder.conjunction();

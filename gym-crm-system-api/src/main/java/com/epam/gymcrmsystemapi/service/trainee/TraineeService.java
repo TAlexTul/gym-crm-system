@@ -87,8 +87,10 @@ public class TraineeService implements TraineeOperations {
 
     @Override
     public TraineeResponse changeStatusById(long id, UserStatus status) {
-        userOperations.changeStatusById(id, status);
-        return TraineeResponse.fromTrainee(getTrainee(id));
+        Trainee trainee = getTrainee(id);
+        var userId = trainee.getUser().getId();
+        userOperations.changeStatusById(userId, status);
+        return TraineeResponse.fromTrainee(trainee);
     }
 
     @Override
