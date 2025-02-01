@@ -1,11 +1,53 @@
 services:
+
+  gym-crm-system-api:
+    image: gym-crm-system-api:0.0.1-SNAPSHOT
+    build:
+      context: ./gym-crm-system-api
+    container_name: crm_api_service
+    restart: always
+    environment:
+      SPRING_DATASOURCE_HOST: postgres_db
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_SERVER_PORT: ${SPRING_SERVER_PORT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      activemq:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    networks:
+      - gym-networks
+
+  trainer-workload-api:
+    image: trainer-workload-api:0.0.1-SNAPSHOT
+    build:
+      context: ./trainer-workload-api
+    container_name: workload_api_service
+    restart: always
+    environment:
+      SPRING_SERVER_PORT_WORKLOAD: ${SPRING_SERVER_PORT_WORKLOAD}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      activemq:
+        condition: service_started
+    ports:
+      - "8081:8081"
+    networks:
+      - gym-networks
+
   activemq:
     image: webcenter/activemq:latest
-    container_name: activemq
+    container_name: activemq_m
     restart: always
     ports:
       - "8161:8161"
       - "61616:61616"
+    networks:
+      - gym-networks
     environment:
       ACTIVEMQ_ADMIN_LOGIN: admin
       ACTIVEMQ_ADMIN_PASSWORD: admin
@@ -14,28 +56,44 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: mongodb
+    container_name: mongodb_db
     restart: always
-    ports:
-      - "27017:27017"
 #    environment:
 #      MONGO_INITDB_ROOT_USERNAME: root
 #      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    networks:
+      - gym-networks
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok" ]
+      interval: 10s
+      retries: 5
 
   postgres:
     image: postgres:latest
-    container_name: postgres_container
+    container_name: postgres_db
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: gym
     ports:
-      - "5433:5432"
+      - "5432:5432"
+    networks:
+      - gym-networks
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "gym" ]
+      interval: 10s
+      retries: 5
+
+networks:
+  gym-networks:
+    driver: bridge
 
 volumes:
   mongodb_data:
